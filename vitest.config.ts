@@ -1,0 +1,12 @@
+import { defineConfig } from "vitest/config";
+import path from "node:path";
+
+export default defineConfig({
+  resolve: { alias: { "@": path.resolve(__dirname, "src") } },
+  test: {
+    include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts"],
+    // Les tests d'intégration partagent la même base de test : on les exécute un par un.
+    fileParallelism: false,
+    setupFiles: ["tests/setup.ts"],
+  },
+});

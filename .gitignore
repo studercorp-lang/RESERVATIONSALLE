@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Le modèle de configuration, lui, doit être partagé
+!.env.example

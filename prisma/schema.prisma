@@ -1,0 +1,281 @@
+// Modèle de données de l'application de réservation QUAI 19.
+//
+// Règles générales :
+// - Toutes les dates/heures sont stockées en UTC (timestamptz) et affichées
+//   en heure de Paris (Europe/Paris) par l'application.
+// - Les montants sont stockés en centimes d'euro TTC (entiers, pas de flottants).
+// - Principe de minimisation RGPD : seules les données listées dans `Customer`
+//   sont collectées sur les clients.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Salles
+// ---------------------------------------------------------------------------
+
+model Room {
+  id             String   @id @default(cuid())
+  slug           String   @unique // utilisé dans l'URL : /salles/la-verriere
+  name           String
+  description    String
+  capacity       Int
+  equipment      String[] // ex. ["Vidéoprojecteur", "Sonorisation"]
+  accessiblePmr  Boolean  @default(false)
+  minDurationMin Int      @default(60) // durée minimale d'une réservation, en minutes
+  maxDurationMin Int      @default(720) // durée maximale, en minutes
+  bufferMin      Int      @default(30) // temps tampon après chaque réservation (ménage, installation)
+  active         Boolean  @default(true) // une salle inactive n'est plus proposée
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
+
+  photos       RoomPhoto[]
+  openingHours OpeningHours[]
+  closures     Closure[]
+  priceRules   PriceRule[]
+  bookings     Booking[]
+
+  @@map("rooms")
+}
+
+model RoomPhoto {
+  id        String @id @default(cuid())
+  roomId    String
+  url       String // chemin local (/uploads/...) ou stockage objet hébergé en UE
+  alt       String // texte alternatif obligatoire (accessibilité)
+  sortOrder Int    @default(0)
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@map("room_photos")
+}
+
+/// Horaires d'ouverture récurrents, exprimés en heure locale de Paris.
+/// Plusieurs plages par jour sont possibles (ex. 8h-12h et 14h-23h).
+model OpeningHours {
+  id       String @id @default(cuid())
+  roomId   String
+  weekday  Int // 1 = lundi … 7 = dimanche (norme ISO)
+  openMin  Int // minutes depuis minuit, ex. 8h00 = 480
+  closeMin Int // minutes depuis minuit, ex. 23h00 = 1380 ; 1440 = minuit
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, weekday])
+  @@map("opening_hours")
+}
+
+/// Fermeture exceptionnelle (travaux, jour férié, privatisation…).
+/// Si `roomId` est vide, la fermeture concerne toutes les salles.
+model Closure {
+  id       String   @id @default(cuid())
+  roomId   String?
+  startsAt DateTime @db.Timestamptz(3)
+  endsAt   DateTime @db.Timestamptz(3)
+  reason   String? // usage interne, jamais affiché au client
+
+  room Room? @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, startsAt])
+  @@map("closures")
+}
+
+enum PriceUnit {
+  HOUR // à l'heure
+  HALF_DAY // à la demi-journée
+  DAY // à la journée
+}
+
+/// Tarif indicatif d'une salle selon le jour de la semaine.
+/// Les prix affichés sont indicatifs : le devis final est établi par l'équipe.
+model PriceRule {
+  id          String    @id @default(cuid())
+  roomId      String
+  weekday     Int // 1 = lundi … 7 = dimanche
+  unit        PriceUnit
+  amountCents Int // montant TTC en centimes
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, weekday, unit])
+  @@map("price_rules")
+}
+
+// ---------------------------------------------------------------------------
+// Clients et demandes de réservation
+// ---------------------------------------------------------------------------
+
+/// Un contact client, identifié par son adresse e-mail.
+/// Pas de compte ni de mot de passe : le client gère sa demande via un lien sécurisé.
+model Customer {
+  id                 String    @id @default(cuid())
+  email              String    @unique // toujours enregistré en minuscules
+  firstName          String
+  lastName           String
+  phone              String // format international E.164, ex. +33612345678
+  company            String? // facultatif
+  marketingOptIn     Boolean   @default(false) // état actuel du consentement à la prospection
+  lastContactAt      DateTime  @default(now()) @db.Timestamptz(3) // point de départ de la durée de conservation « prospection »
+  anonymizedAt       DateTime? @db.Timestamptz(3) // rempli quand les données ont été effacées/anonymisées
+  createdAt          DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime  @updatedAt @db.Timestamptz(3)
+
+  bookings Booking[]
+  consents Consent[]
+
+  @@map("customers")
+}
+
+enum BookingStatus {
+  PENDING // demande reçue, en attente de traitement par l'équipe (bloque le créneau)
+  CONFIRMED // confirmée par l'équipe (bloque le créneau)
+  REFUSED // refusée par l'équipe
+  CANCELLED // annulée (par le client ou l'équipe)
+  EXPIRED // demande non traitée dans le délai : le créneau a été libéré
+  COMPLETED // le créneau est passé
+}
+
+enum BookingSource {
+  ONLINE // formulaire du site
+  BACKOFFICE // saisie manuelle par l'équipe (ex. demande par téléphone)
+}
+
+/// Une demande de réservation d'une salle sur un créneau.
+///
+/// Anti-double réservation : une contrainte d'exclusion PostgreSQL (ajoutée dans
+/// la migration SQL, voir prisma/migrations) interdit que deux réservations
+/// PENDING ou CONFIRMED d'une même salle se chevauchent sur [startsAt, blockedUntil).
+/// `blockedUntil` = fin du créneau + temps tampon de la salle au moment de la demande.
+model Booking {
+  id                String        @id @default(cuid())
+  reference         String        @unique // référence lisible communiquée au client, ex. Q19-7K3F9X
+  roomId            String
+  customerId        String
+  startsAt          DateTime      @db.Timestamptz(3)
+  endsAt            DateTime      @db.Timestamptz(3)
+  blockedUntil      DateTime      @db.Timestamptz(3)
+  attendees         Int
+  status            BookingStatus @default(PENDING)
+  source            BookingSource @default(ONLINE)
+  comment           String? // besoins particuliers (facultatif, longueur limitée)
+  estimatedCents    Int? // estimation indicative au moment de la demande (TTC)
+  internalNote      String? // note interne de l'équipe, jamais visible du client
+  pendingExpiresAt  DateTime?     @db.Timestamptz(3) // au-delà, une demande PENDING non traitée expire
+  manageTokenHash   String?       @unique // empreinte SHA-256 du lien de gestion (le jeton en clair n'est jamais stocké)
+  manageTokenExpiry DateTime?     @db.Timestamptz(3)
+  reminderSentAt    DateTime?     @db.Timestamptz(3)
+  decidedAt         DateTime?     @db.Timestamptz(3) // date de confirmation / refus
+  cancelledAt       DateTime?     @db.Timestamptz(3)
+  createdAt         DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime      @updatedAt @db.Timestamptz(3)
+
+  room     Room      @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  customer Customer  @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  consents Consent[]
+
+  @@index([roomId, startsAt])
+  @@index([status, startsAt])
+  @@index([customerId])
+  @@map("bookings")
+}
+
+enum ConsentType {
+  TERMS // acceptation des conditions de réservation (obligatoire)
+  MARKETING // prospection commerciale (facultatif)
+}
+
+/// Historique horodaté des consentements (preuve exigée par le RGPD).
+/// On ajoute une ligne à chaque acceptation ou retrait, on ne modifie jamais.
+model Consent {
+  id          String      @id @default(cuid())
+  customerId  String
+  bookingId   String?
+  type        ConsentType
+  granted     Boolean // true = accepté, false = refusé ou retiré
+  textVersion String // version du texte accepté, ex. "cgr-2026-10"
+  source      String // "formulaire", "lien-gestion", "back-office"…
+  createdAt   DateTime    @default(now()) @db.Timestamptz(3)
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  booking  Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([customerId, type])
+  @@map("consents")
+}
+
+// ---------------------------------------------------------------------------
+// Équipe, audit, réglages
+// ---------------------------------------------------------------------------
+
+enum AdminRole {
+  ADMIN // tous les droits, y compris gestion de l'équipe, réglages et outils RGPD
+  MANAGER // gestion des salles et des réservations
+}
+
+model AdminUser {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String
+  passwordHash   String // haché avec argon2id, jamais le mot de passe en clair
+  role           AdminRole @default(MANAGER)
+  totpSecret     String? // secret de double authentification, chiffré (AES-256-GCM)
+  totpEnabled    Boolean   @default(false)
+  failedLogins   Int       @default(0)
+  lockedUntil    DateTime? @db.Timestamptz(3)
+  lastLoginAt    DateTime? @db.Timestamptz(3)
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(3)
+
+  auditLogs AuditLog[]
+
+  @@map("admin_users")
+}
+
+/// Journal d'audit : qui a consulté, modifié, exporté ou supprimé quoi, et quand.
+/// Les détails ne contiennent jamais de données personnelles en clair
+/// (uniquement des identifiants techniques et des noms de champs).
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String? // membre de l'équipe ; vide pour les actions automatiques
+  actorLabel String // ex. "admin:cl…", "système (purge automatique)", "client (lien de gestion)"
+  action     String // ex. "booking.view", "customer.export", "customer.anonymize"
+  entityType String // ex. "Booking", "Customer", "Room"
+  entityId   String?
+  details    Json?
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  actor AdminUser? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+/// Réglages modifiables depuis le back-office (clé → valeur JSON).
+/// Les valeurs par défaut sont définies dans src/lib/settings.ts.
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@map("settings")
+}
+
+/// Compteurs de limitation du nombre de requêtes (anti-abus).
+/// La clé est une empreinte (jamais l'adresse IP en clair).
+model RateLimit {
+  key         String   @id
+  count       Int
+  windowStart DateTime @db.Timestamptz(3)
+
+  @@map("rate_limits")
+}
