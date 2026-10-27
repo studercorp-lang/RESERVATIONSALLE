@@ -19,9 +19,18 @@ export class BookingRejectedError extends Error {
   }
 }
 
+type Tx = Prisma.TransactionClient;
+
 export type ReserveInput = {
   roomId: string;
-  customerId: string;
+  /**
+   * Client : identifiant existant, ou fonction qui crée/met à jour la fiche client
+   * DANS la transaction — ainsi, si le créneau est refusé, aucune donnée
+   * personnelle n'est enregistrée inutilement.
+   */
+  customer: string | ((tx: Tx) => Promise<string>);
+  /** Opérations complémentaires dans la même transaction (consentements, lien de gestion…). */
+  afterCreate?: (tx: Tx, booking: Booking) => Promise<void>;
   startsAt: Date;
   endsAt: Date;
   attendees: number;
@@ -71,12 +80,13 @@ export async function reserveSlot(input: ReserveInput, now = new Date(), setting
           throw new BookingRejectedError(["SLOT_TAKEN"]);
         }
 
+        const customerId = typeof input.customer === "string" ? input.customer : await input.customer(tx);
         const status = cfg.autoConfirm ? BookingStatus.CONFIRMED : BookingStatus.PENDING;
-        return tx.booking.create({
+        const booking = await tx.booking.create({
           data: {
             reference: generateReference(),
             roomId: room.id,
-            customerId: input.customerId,
+            customerId,
             startsAt: input.startsAt,
             endsAt: input.endsAt,
             blockedUntil: blockedInterval(input.startsAt, input.endsAt, room.bufferMin).end,
@@ -89,6 +99,8 @@ export async function reserveSlot(input: ReserveInput, now = new Date(), setting
             decidedAt: status === BookingStatus.CONFIRMED ? now : null,
           },
         });
+        await input.afterCreate?.(tx, booking);
+        return booking;
       });
     } catch (error) {
       if (error instanceof BookingRejectedError) throw error;

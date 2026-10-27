@@ -1,26 +1,41 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * 🎨 Couleurs de la marque QUAI 19 — à remplacer par la charte graphique.
+ * Contrastes vérifiés (WCAG AA) : texte blanc sur --brand ≥ 4,5:1 ; --muted sur blanc ≥ 4,5:1.
+ */
+@theme {
+  --color-brand: #0f5c5a;        /* couleur principale (boutons, liens) */
+  --color-brand-dark: #0a4341;   /* survol */
+  --color-brand-soft: #e3efee;   /* fonds légers */
+  --color-ink: #1c1c1c;          /* texte principal */
+  --color-muted: #55534e;        /* texte secondaire */
+  --color-surface: #f6f5f2;      /* fond de page */
+  --color-line: #d6d3cc;         /* bordures */
+  --color-danger: #b42318;       /* erreurs */
+  --color-busy: #c9c5bc;         /* créneaux occupés */
+  --color-free: #8cc5b5;         /* créneaux libres */
+
+  /* Polices système : aucune police chargée depuis un serveur tiers. */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* Contour de focus bien visible pour la navigation au clavier */
+:focus-visible {
+  outline: 3px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }

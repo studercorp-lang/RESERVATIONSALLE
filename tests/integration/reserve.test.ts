@@ -21,7 +21,7 @@ const allDays = (openMin: number, closeMin: number) =>
   ({ create: [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({ weekday, openMin, closeMin })) });
 
 const reserve = (roomId: string, start: number, end: number, extra: Partial<Parameters<typeof reserveSlot>[0]> = {}, settings = S, now = NOW) =>
-  reserveSlot({ roomId, customerId, startsAt: parisToUtc(DAY, start), endsAt: parisToUtc(DAY, end), attendees: 10, ...extra }, now, settings);
+  reserveSlot({ roomId, customer: customerId, startsAt: parisToUtc(DAY, start), endsAt: parisToUtc(DAY, end), attendees: 10, ...extra }, now, settings);
 
 async function rejection(p: Promise<unknown>) {
   try {

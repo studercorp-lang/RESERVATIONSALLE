@@ -136,3 +136,19 @@ export function mergeIntervals(intervals: Interval[]): Interval[] {
   }
   return out;
 }
+
+/** Retire des plages `open` les plages `busy` → plages réellement libres (pour le calendrier). */
+export function subtractIntervals(open: Interval[], busy: Interval[]): Interval[] {
+  const merged = mergeIntervals(busy);
+  const out: Interval[] = [];
+  for (const o of open) {
+    let cursor = o.start;
+    for (const b of merged) {
+      if (b.end <= cursor || b.start >= o.end) continue;
+      if (b.start > cursor) out.push({ start: cursor, end: b.start });
+      if (b.end > cursor) cursor = b.end;
+    }
+    if (cursor < o.end) out.push({ start: cursor, end: o.end });
+  }
+  return out;
+}

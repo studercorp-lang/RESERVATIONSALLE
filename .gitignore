@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Le modèle de configuration, lui, doit être partagé
 !.env.example
+
+# E-mails de développement (contiennent des données de test)
+.outbox/
