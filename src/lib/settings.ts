@@ -19,6 +19,17 @@ export const settingsSchema = z.object({
   reminderHoursBefore: z.number().int().min(1).max(24 * 14),
   /** Le client peut annuler/modifier via son lien jusqu'à N heures avant le créneau. */
   clientChangeDeadlineHours: z.number().int().min(0).max(24 * 60),
+  /**
+   * Barème des frais d'annulation (sur le montant TTC du devis).
+   * Chaque palier s'applique si l'annulation intervient au moins `minDaysBefore`
+   * jours calendaires avant le jour du créneau. Le palier le plus favorable au
+   * client parmi ceux qui s'appliquent est retenu.
+   */
+  cancellationTiers: z
+    .array(z.object({ minDaysBefore: z.number().int().min(0), feePercent: z.number().int().min(0).max(100) }))
+    .min(1),
+  /** Frais en cas d'absence sans annulation (en % du devis). */
+  noShowFeePercent: z.number().int().min(0).max(100),
   /** Conservation des données de réservation : N années après la date du créneau. */
   retentionBookingYears: z.number().int().min(1).max(10),
   /** Conservation des données de prospection : N années après le dernier contact. */
@@ -36,6 +47,13 @@ export const DEFAULT_SETTINGS: Settings = {
   minNoticeHours: 24,
   reminderHoursBefore: 48,
   clientChangeDeadlineHours: 48,
+  cancellationTiers: [
+    { minDaysBefore: 30, feePercent: 0 }, // 30 jours ou plus avant : aucun frais
+    { minDaysBefore: 16, feePercent: 25 }, // de 29 à 16 jours avant : 25 %
+    { minDaysBefore: 8, feePercent: 50 }, // de 15 à 8 jours avant : 50 %
+    { minDaysBefore: 0, feePercent: 90 }, // 7 jours ou moins : 90 %
+  ],
+  noShowFeePercent: 100,
   retentionBookingYears: 3,
   retentionProspectYears: 3,
   retentionAuditMonths: 12,
