@@ -1,4 +1,5 @@
 /** Mise en forme des dates/heures en français, à l'heure de Paris. */
+import { parsePhoneNumberFromString } from "libphonenumber-js/min";
 import { TIMEZONE } from "@/lib/time";
 
 const dateFmt = new Intl.DateTimeFormat("fr-FR", { timeZone: TIMEZONE, weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -25,4 +26,11 @@ export function parseTimeLabel(label: string): number | null {
   if (!m) return null;
   const v = Number(m[1]) * 60 + Number(m[2]);
   return v >= 0 && v <= 1440 ? v : null;
+}
+
+/** « +33612345678 » → « 06 12 34 56 78 » (numéros français) ou format international lisible. */
+export function formatPhone(e164: string): string {
+  const p = parsePhoneNumberFromString(e164);
+  if (!p) return e164;
+  return p.country === "FR" ? p.formatNational() : p.formatInternational();
 }

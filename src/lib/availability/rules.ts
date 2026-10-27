@@ -35,7 +35,8 @@ export type RejectionReason =
   | "OVER_CAPACITY"
   | "OUTSIDE_OPENING_HOURS"
   | "CLOSED"
-  | "SLOT_TAKEN";
+  | "SLOT_TAKEN"
+  | "NOT_MODIFIABLE";
 
 export const REJECTION_MESSAGES: Record<RejectionReason, string> = {
   ROOM_INACTIVE: "Cette salle n'est pas disponible à la réservation.",
@@ -50,6 +51,7 @@ export const REJECTION_MESSAGES: Record<RejectionReason, string> = {
   OUTSIDE_OPENING_HOURS: "Ce créneau est en dehors des horaires d'ouverture de la salle.",
   CLOSED: "La salle est fermée à cette date.",
   SLOT_TAKEN: "Ce créneau n'est plus disponible.",
+  NOT_MODIFIABLE: "Cette réservation ne peut plus être modifiée.",
 };
 
 /** Deux intervalles semi-ouverts [début, fin) se chevauchent-ils ? */

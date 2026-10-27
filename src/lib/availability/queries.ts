@@ -28,9 +28,16 @@ export async function getBusyByRoom(
   to: Date,
   now: Date,
   db: Prisma.TransactionClient = prisma,
+  excludeBookingId?: string, // la réservation en cours de modification ne se bloque pas elle-même
 ): Promise<Map<string, Interval[]>> {
   const rows = await db.booking.findMany({
-    where: { roomId: { in: roomIds }, startsAt: { lt: to }, blockedUntil: { gt: from }, ...activeBookingWhere(now) },
+    where: {
+      roomId: { in: roomIds },
+      startsAt: { lt: to },
+      blockedUntil: { gt: from },
+      ...activeBookingWhere(now),
+      ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}),
+    },
     select: { roomId: true, startsAt: true, blockedUntil: true }, // jamais de données client
     orderBy: { startsAt: "asc" },
   });

@@ -17,7 +17,7 @@ export const settingsSchema = z.object({
   minNoticeHours: z.number().int().min(0).max(24 * 60),
   /** Envoi du rappel N heures avant le créneau. */
   reminderHoursBefore: z.number().int().min(1).max(24 * 14),
-  /** Le client peut annuler/modifier via son lien jusqu'à N heures avant le créneau. */
+  /** Le client peut modifier sa demande via son lien jusqu'à N heures avant le créneau (l'annulation reste possible jusqu'au début, avec les frais du barème). */
   clientChangeDeadlineHours: z.number().int().min(0).max(24 * 60),
   /**
    * Barème des frais d'annulation (sur le montant TTC du devis).

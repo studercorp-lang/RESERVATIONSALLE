@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { estimatePriceCents, formatEuros } from "@/lib/availability/pricing";
-import { cancellationFeePercent } from "@/lib/booking/cancellation";
+import { cancellationFeePercent, describeCancellationPolicy } from "@/lib/booking/cancellation";
 import { DEFAULT_SETTINGS } from "@/lib/settings";
 import { parisToUtc } from "@/lib/time";
 
@@ -73,5 +73,13 @@ describe("frais d'annulation (barème QUAI 19)", () => {
 
   it("compte en jours calendaires de Paris, malgré le changement d'heure (28 mars)", () => {
     expect(fee("2027-03-24", 23 * 60 + 30)).toBe(90); // 23h30 à Paris = encore le 24
+  });
+});
+
+describe("barème en toutes lettres", () => {
+  it("décrit le barème QUAI 19", () => {
+    expect(describeCancellationPolicy(DEFAULT_SETTINGS)).toBe(
+      "aucun frais à 30 jours ou plus, 25 % de 29 à 16 jours, 50 % de 15 à 8 jours, 90 % à 7 jours ou moins avant le jour réservé ; 100 % en cas d'absence",
+    );
   });
 });

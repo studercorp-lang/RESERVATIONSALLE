@@ -27,3 +27,16 @@ export function cancellationFeePercent(
   if (applicable.length === 0) return settings.noShowFeePercent;
   return Math.min(...applicable.map((t) => t.feePercent));
 }
+
+/** Barème en toutes lettres, ex. « aucun frais à 30 jours ou plus, 25 % de 29 à 16 jours, … ». */
+export function describeCancellationPolicy(settings: Pick<Settings, "cancellationTiers" | "noShowFeePercent">): string {
+  const tiers = [...settings.cancellationTiers].sort((a, b) => b.minDaysBefore - a.minDaysBefore);
+  const fee = (p: number) => (p === 0 ? "aucun frais" : `${p} %`);
+  const parts = tiers.map((t, i) => {
+    const upper = i === 0 ? null : tiers[i - 1].minDaysBefore - 1;
+    if (upper === null) return `${fee(t.feePercent)} à ${t.minDaysBefore} jours ou plus`;
+    if (t.minDaysBefore === 0) return `${fee(t.feePercent)} à ${upper} jours ou moins`;
+    return `${fee(t.feePercent)} de ${upper} à ${t.minDaysBefore} jours`;
+  });
+  return `${parts.join(", ")} avant le jour réservé ; ${fee(settings.noShowFeePercent)} en cas d'absence`;
+}

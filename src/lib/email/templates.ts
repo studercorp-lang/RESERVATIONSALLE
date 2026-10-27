@@ -4,7 +4,7 @@
  */
 import { SITE, appUrl } from "@/config/site";
 import { formatEuros } from "@/lib/availability/pricing";
-import { formatSlot } from "@/lib/format";
+import { formatPhone, formatSlot } from "@/lib/format";
 
 /** Échappe le texte saisi par l'utilisateur avant de l'insérer dans du HTML (anti-XSS). */
 export function esc(s: string): string {
@@ -90,7 +90,7 @@ export function teamNewRequest(d: BookingMailData) {
     ["Client", `${d.firstName} ${d.lastName}`],
     ...(d.company ? [["Société", d.company] as [string, string]] : []),
     ["E-mail", d.email],
-    ["Téléphone", d.phone],
+    ["Téléphone", formatPhone(d.phone)],
     ...(d.comment ? [["Commentaire", d.comment] as [string, string]] : []),
   ];
   const adminUrl = appUrl("/admin/reservations");
@@ -106,4 +106,45 @@ export function customerReminder(d: BookingMailData) {
 <p><strong>Adresse :</strong> ${esc(SITE.address)}</p>${d.manageUrl ? button(d.manageUrl, "Voir ma réservation") : ""}
 <p>Une question ? Écrivez-nous à ${esc(SITE.contactEmail)}.</p><p>L'équipe ${esc(SITE.name)}</p>`);
   return { subject, html, text: `Bonjour ${d.firstName},\n\nNous vous attendons bientôt :\n${text(rows)}\nAdresse : ${SITE.address}\n\nL'équipe ${SITE.name}` };
+}
+
+/** Statuts affichés au client. */
+export const STATUS_LABELS: Record<BookingMailData["status"], string> = {
+  PENDING: "Demande en cours d'étude",
+  CONFIRMED: "Confirmée",
+  REFUSED: "Non retenue",
+  CANCELLED: "Annulée",
+  EXPIRED: "Expirée",
+  COMPLETED: "Terminée",
+};
+
+/** Annulation : confirmation au client. */
+export function customerCancelled(d: BookingMailData & { feePercent: number }) {
+  const subject = `Annulation de votre réservation ${d.reference} — ${SITE.name}`;
+  const fee =
+    d.feePercent > 0
+      ? `Conformément à nos conditions de réservation, des frais d'annulation de ${d.feePercent} % du montant du devis s'appliquent. Notre équipe reviendra vers vous à ce sujet.`
+      : "Cette annulation est sans frais.";
+  const rows = recapRows(d).filter(([k]) => !k.startsWith("Estimation"));
+  const html = layout(subject, `<p>Bonjour ${esc(d.firstName)},</p><p>Votre réservation a bien été annulée.</p>${table(rows)}<p>${esc(fee)}</p>
+<p>Au plaisir de vous accueillir une prochaine fois,<br>L'équipe ${esc(SITE.name)}</p>`);
+  return { subject, html, text: `Bonjour ${d.firstName},\n\nVotre réservation a bien été annulée.\n\n${text(rows)}\n\n${fee}\n\nL'équipe ${SITE.name}` };
+}
+
+/** Modification : confirmation au client. */
+export function customerModified(d: BookingMailData) {
+  const subject = `Modification de votre demande ${d.reference} — ${SITE.name}`;
+  const rows = recapRows(d);
+  const html = layout(subject, `<p>Bonjour ${esc(d.firstName)},</p><p>Votre demande a bien été modifiée. Voici le nouveau récapitulatif :</p>${table(rows)}
+${d.manageUrl ? button(d.manageUrl, "Gérer ma réservation") : ""}<p>L'équipe ${esc(SITE.name)}</p>`);
+  return { subject, html, text: `Bonjour ${d.firstName},\n\nVotre demande a bien été modifiée :\n\n${text(rows)}\n\nL'équipe ${SITE.name}` };
+}
+
+/** Notification à l'équipe d'un changement fait par le client via son lien. */
+export function teamClientChange(d: BookingMailData, what: string) {
+  const subject = `${what} par le client — ${d.reference}`;
+  const rows: [string, string][] = [...recapRows(d), ["Client", `${d.firstName} ${d.lastName}`], ["E-mail", d.email], ["Téléphone", formatPhone(d.phone)]];
+  const adminUrl = appUrl("/admin/reservations");
+  const html = layout(subject, `<p>${esc(what)} par le client via son lien de gestion.</p>${table(rows)}${button(adminUrl, "Ouvrir le back-office")}`);
+  return { subject, html, text: `${what} par le client.\n\n${text(rows)}\n\nBack-office : ${adminUrl}` };
 }
