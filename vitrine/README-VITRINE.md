@@ -1,6 +1,6 @@
 # Site vitrine QUAI 19
 
-Site vitrine en une seule page : accueil, les trois salles (La Mezzanine, Le Lounge, Le Club), tarifs (700 € de minimum de consommation, boissons et nourriture comprises), horaires, page « Réserver » (formulaire Tally) et une page « Informations légales » courte (éditeur, hébergeur, données personnelles, conditions de réservation). Il n'utilise **ni base de données, ni cookie, ni ressource externe**.
+Site vitrine en une seule page : accueil, les trois salles (La Mezzanine, Le Lounge, Le Club), tarifs (700 € TTC de minimum de consommation, boissons et nourriture comprises), horaires, page « Réserver » (formulaire Tally) et une page « Informations légales » courte (éditeur, hébergeur, données personnelles, conditions de réservation). Il n'utilise **ni base de données, ni cookie, ni ressource externe**.
 
 Les demandes de réservation passent par le formulaire Tally **https://tally.so/r/RWWrNK** (données stockées dans l'Union européenne). Vous les recevez par e-mail et les traitez à la main.
 
@@ -43,7 +43,7 @@ Gardez les guillemets. Laissez `""` pour masquer une information. Sur GitHub : o
 
 - [ ] Rendre le site public (menu Partager) et y saisir votre e-mail et votre téléphone.
 - [ ] Vérifier que le formulaire Tally propose bien les salles **La Mezzanine, Le Lounge, Le Club**. Il doit avoir des cases « conditions de réservation » (obligatoire) et « informations commerciales » (facultative), **non pré-cochées**, et l'avertissement « pas d'informations sensibles » sur le commentaire. La case « conditions » peut renvoyer vers `…#informations-legales`.
-- [ ] ⚖️ **Mentions obligatoires absentes de la page « Informations légales »** (loi LCEN, à ajouter dès que possible) : raison sociale et forme juridique, capital, RCS/SIRET, n° de TVA, directeur·rice de la publication, coordonnées complètes de l'hébergeur. Pour des clients particuliers : préciser si les prix sont TTC et le nom du **médiateur de la consommation** (adhésion obligatoire). Faites relire la page par un juriste.
+- [ ] ⚖️ **Mentions obligatoires absentes de la page « Informations légales »** (loi LCEN, à ajouter dès que possible) : raison sociale et forme juridique, capital, RCS/SIRET, n° de TVA, directeur·rice de la publication, coordonnées complètes de l'hébergeur. Pour des clients particuliers : le nom du **médiateur de la consommation** (adhésion obligatoire). Les prix sont bien affichés TTC. Faites relire la page par un juriste.
 - [ ] Ajouter les photos et les descriptions des salles (en le demandant à Claude).
 - [ ] Archiver le contrat de sous-traitance (DPA) de Tally.
 - [ ] RGPD, une fois par an : supprimer dans Tally et dans votre messagerie les demandes de plus de 3 ans.
