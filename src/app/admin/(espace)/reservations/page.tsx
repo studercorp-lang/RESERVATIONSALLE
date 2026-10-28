@@ -36,7 +36,8 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
       <PageTitle
         actions={
           <>
-            <Link href={`/admin/reservations/export?${query}`} className={smallButton}>Exporter (CSV)</Link>
+            {/* Lien simple (pas de préchargement) : un export ne doit partir que sur clic */}
+            <a href={`/admin/reservations/export?${query}`} className={smallButton}>Exporter (CSV)</a>
             <Link href="/admin/reservations/nouvelle" className={primarySmall}>+ Saisir une réservation</Link>
           </>
         }

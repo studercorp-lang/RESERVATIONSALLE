@@ -9,11 +9,14 @@ const NAV = [
   { href: "/admin", label: "Tableau de bord" },
   { href: "/admin/reservations", label: "Réservations" },
   { href: "/admin/calendrier", label: "Calendrier" },
+  { href: "/admin/contacts", label: "Contacts" },
   { href: "/admin/salles", label: "Salles et horaires" },
 ];
 const ADMIN_NAV = [
   { href: "/admin/reglages", label: "Réglages" },
   { href: "/admin/equipe", label: "Équipe" },
+  { href: "/admin/donnees-personnelles", label: "Données personnelles" },
+  { href: "/admin/journal", label: "Journal" },
 ];
 
 /** Espace équipe : chaque page est protégée (session + double authentification). */
