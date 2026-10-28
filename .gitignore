@@ -45,3 +45,8 @@ next-env.d.ts
 
 # E-mails de développement (contiennent des données de test)
 .outbox/
+
+# Tests de bout en bout
+.outbox-e2e/
+test-results/
+playwright-report/

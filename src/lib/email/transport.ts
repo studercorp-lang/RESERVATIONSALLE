@@ -25,7 +25,7 @@ export async function deliver(mail: Mail): Promise<void> {
   }
 
   if (!process.env.SMTP_HOST) {
-    const dir = path.join(process.cwd(), ".outbox");
+    const dir = process.env.OUTBOX_DIR ?? path.join(process.cwd(), ".outbox");
     await mkdir(dir, { recursive: true });
     const file = `${new Date().toISOString().replace(/[:.]/g, "-")}-${mail.subject.replace(/[^a-z0-9]+/gi, "-").slice(0, 40)}.html`;
     await writeFile(path.join(dir, file), `<!-- À : ${mail.to} | Objet : ${mail.subject} -->\n${mail.html}`);

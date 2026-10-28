@@ -15,7 +15,9 @@
     "db:test:prepare": "node scripts/prepare-test-db.mjs",
     "format": "prettier --write src tests prisma",
     "admin:create": "tsx scripts/create-admin.ts",
-    "jobs": "tsx --tsconfig tsconfig.json scripts/run-jobs.ts"
+    "jobs": "tsx --tsconfig tsconfig.json scripts/run-jobs.ts",
+    "test:e2e": "playwright test",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
@@ -34,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/nodemailer": "^8.0.2",
