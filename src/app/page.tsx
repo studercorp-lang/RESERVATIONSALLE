@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTimeOptions } from "@/lib/availability/search";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { dateBounds } from "@/lib/validation/search-params";
@@ -9,8 +10,9 @@ import { SITE } from "@/config/site";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [settings, rooms] = await Promise.all([
+  const [settings, times, rooms] = await Promise.all([
     getSettings(),
+    getTimeOptions(),
     prisma.room.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" }, include: { photos: { orderBy: { sortOrder: "asc" }, take: 1 } } }),
   ]);
   const bounds = dateBounds(settings);
@@ -27,7 +29,7 @@ export default async function HomePage() {
       <section id="recherche" aria-labelledby="titre-recherche">
         <Card>
           <h2 id="titre-recherche" className="mb-4 text-xl font-semibold">Quand souhaitez-vous venir ?</h2>
-          <SearchForm {...bounds} />
+          <SearchForm {...bounds} times={times} />
         </Card>
       </section>
 

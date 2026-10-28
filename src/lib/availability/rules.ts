@@ -17,7 +17,7 @@ export type RoomRules = {
   maxDurationMin: number;
   bufferMin: number;
   active: boolean;
-  openingHours: { weekday: number; openMin: number; closeMin: number }[];
+  openingHours: { weekday: number; openMin: number; closeMin: number; lastStartMin?: number | null }[];
 };
 
 export type Interval = { start: Date; end: Date };
@@ -34,6 +34,7 @@ export type RejectionReason =
   | "TOO_LONG"
   | "OVER_CAPACITY"
   | "OUTSIDE_OPENING_HOURS"
+  | "START_TOO_LATE"
   | "CLOSED"
   | "SLOT_TAKEN"
   | "NOT_MODIFIABLE";
@@ -49,6 +50,7 @@ export const REJECTION_MESSAGES: Record<RejectionReason, string> = {
   TOO_LONG: "La durée dépasse la durée maximale de réservation de cette salle.",
   OVER_CAPACITY: "Le nombre de personnes dépasse la capacité de cette salle.",
   OUTSIDE_OPENING_HOURS: "Ce créneau est en dehors des horaires d'ouverture de la salle.",
+  START_TOO_LATE: "L'heure de début est trop tardive : consultez les horaires de la salle.",
   CLOSED: "La salle est fermée à cette date.",
   SLOT_TAKEN: "Ce créneau n'est plus disponible.",
   NOT_MODIFIABLE: "Cette réservation ne peut plus être modifiée.",
@@ -65,17 +67,39 @@ export function blockedInterval(startsAt: Date, endsAt: Date, bufferMin: number)
 }
 
 /**
- * Le créneau tient-il entièrement dans une plage d'ouverture du jour de début ?
- * Une fin à minuit pile est acceptée (plage ouverte jusqu'à 24h00).
+ * Position d'un créneau sur « l'horloge » de son jour de début (heure de Paris) :
+ * minutes depuis minuit du jour de début ; la fin peut dépasser 1440 si elle
+ * tombe le lendemain (ex. 3h00 le lendemain = 1620). null si le créneau
+ * déborde au-delà du lendemain.
  */
-export function fitsOpeningHours(openingHours: RoomRules["openingHours"], startsAt: Date, endsAt: Date): boolean {
+export function slotClock(startsAt: Date, endsAt: Date): { weekday: number; startMin: number; endMin: number } | null {
   const s = utcToParis(startsAt);
   const e = utcToParis(endsAt);
-  let endMin: number;
-  if (e.isoDate === s.isoDate) endMin = e.minutes;
-  else if (e.minutes === 0 && e.isoDate === utcToParis(parisToUtc(s.isoDate, 1440)).isoDate) endMin = 1440;
-  else return false; // les créneaux sur plusieurs jours ne sont pas réservables en ligne
-  return openingHours.some((h) => h.weekday === s.weekday && h.openMin <= s.minutes && endMin <= h.closeMin);
+  const nextDay = utcToParis(parisToUtc(s.isoDate, 1440)).isoDate;
+  const endMin = e.isoDate === s.isoDate ? e.minutes : e.isoDate === nextDay ? 1440 + e.minutes : null;
+  return endMin === null ? null : { weekday: s.weekday, startMin: s.minutes, endMin };
+}
+
+/**
+ * Le créneau tient-il entièrement dans une plage d'ouverture qui commence le jour
+ * du début ? Les plages peuvent se terminer le lendemain (ex. 15h → 3h du matin).
+ */
+export function openingHoursCheck(
+  openingHours: RoomRules["openingHours"],
+  startsAt: Date,
+  endsAt: Date,
+): "OK" | "OUTSIDE_OPENING_HOURS" | "START_TOO_LATE" {
+  const clock = slotClock(startsAt, endsAt);
+  if (!clock) return "OUTSIDE_OPENING_HOURS";
+  const fitting = openingHours.filter(
+    (h) => h.weekday === clock.weekday && h.openMin <= clock.startMin && clock.endMin <= h.closeMin,
+  );
+  if (fitting.length === 0) return "OUTSIDE_OPENING_HOURS";
+  return fitting.some((h) => h.lastStartMin == null || clock.startMin <= h.lastStartMin) ? "OK" : "START_TOO_LATE";
+}
+
+export function fitsOpeningHours(openingHours: RoomRules["openingHours"], startsAt: Date, endsAt: Date): boolean {
+  return openingHoursCheck(openingHours, startsAt, endsAt) === "OK";
 }
 
 /**
@@ -111,7 +135,8 @@ export function checkSlotRules(input: {
   if (durationMin > room.maxDurationMin) reasons.push("TOO_LONG");
   if (!Number.isInteger(attendees) || attendees < 1 || attendees > room.capacity) reasons.push("OVER_CAPACITY");
 
-  if (!fitsOpeningHours(room.openingHours, startsAt, endsAt)) reasons.push("OUTSIDE_OPENING_HOURS");
+  const opening = openingHoursCheck(room.openingHours, startsAt, endsAt);
+  if (opening !== "OK") reasons.push(opening);
   if (closures.some((c) => overlaps(c, { start: startsAt, end: endsAt }))) reasons.push("CLOSED");
 
   return reasons;

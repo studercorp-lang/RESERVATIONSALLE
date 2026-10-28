@@ -60,12 +60,14 @@ model RoomPhoto {
 
 /// Horaires d'ouverture récurrents, exprimés en heure locale de Paris.
 /// Plusieurs plages par jour sont possibles (ex. 8h-12h et 14h-23h).
+/// Une plage peut se terminer le lendemain : 15h → 3h du matin = openMin 900, closeMin 1620.
 model OpeningHours {
-  id       String @id @default(cuid())
-  roomId   String
-  weekday  Int // 1 = lundi … 7 = dimanche (norme ISO)
-  openMin  Int // minutes depuis minuit, ex. 8h00 = 480
-  closeMin Int // minutes depuis minuit, ex. 23h00 = 1380 ; 1440 = minuit
+  id           String @id @default(cuid())
+  roomId       String
+  weekday      Int // jour où la plage COMMENCE : 1 = lundi … 7 = dimanche (norme ISO)
+  openMin      Int // minutes depuis minuit, ex. 15h00 = 900
+  closeMin     Int // minutes depuis minuit du jour d'ouverture ; au-delà de 1440 = lendemain (3h00 = 1620)
+  lastStartMin Int? // heure de début au plus tard (ex. 22h00 = 1320) ; vide = pas de limite
 
   room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
 

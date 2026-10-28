@@ -13,14 +13,16 @@ export const COMMENT_MAX = 1000;
 export const MAX_ATTENDEES = 500;
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide.");
-const minutes = z.coerce.number().int().min(0).max(1440);
+// Minutes depuis minuit du jour de début. La fin peut tomber le lendemain (ex. 3h00 = 1620).
+const startMinutes = z.coerce.number().int().min(0).max(1439);
+const endMinutes = z.coerce.number().int().min(1).max(2880);
 
 /** Créneau recherché : date (Paris), heure de début/fin en minutes, nombre de personnes. */
 export const slotSchema = z
   .object({
     date: isoDate,
-    startMin: minutes,
-    endMin: minutes,
+    startMin: startMinutes,
+    endMin: endMinutes,
     attendees: z.coerce
       .number({ error: "Indiquez le nombre de personnes." })
       .int("Indiquez un nombre entier.")

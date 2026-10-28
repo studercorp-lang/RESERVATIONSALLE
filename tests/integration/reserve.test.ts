@@ -140,3 +140,29 @@ describe("recherche de disponibilité", () => {
     expect(week[3].open[0].start.toISOString()).toBe("2027-03-29T06:00:00.000Z"); // 8h heure d'été
   });
 });
+
+describe("horaires de nuit (15h → 3h)", () => {
+  beforeEach(async () => {
+    await prisma.openingHours.deleteMany({ where: { roomId: big.id } });
+    await prisma.openingHours.createMany({
+      data: [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({ roomId: big.id, weekday, openMin: 900, closeMin: 1620, lastStartMin: 1320 })),
+    });
+  });
+
+  it("réserve 20h → 02h et bloque le créneau suivant à cheval sur minuit", async () => {
+    const b = await reserve(big.id, 1200, 1560, { attendees: 40 });
+    expect(b.endsAt.toISOString()).toBe(parisToUtc("2027-01-12", 120).toISOString()); // mardi 2h
+    expect(await rejection(reserve(big.id, 1320, 1620))).toEqual(["SLOT_TAKEN"]);
+  });
+
+  it("refuse un début à 22h30", async () => {
+    expect(await rejection(reserve(big.id, 1350, 1560))).toEqual(["START_TOO_LATE"]);
+  });
+
+  it("le planning du jour va de 15h à 3h le lendemain et montre l'occupation après minuit", async () => {
+    await reserve(big.id, 1200, 1560, { attendees: 40 }); // 20h → 2h + 1 h de tampon
+    const [day] = await getRoomSchedule(big.id, DAY, 1, NOW);
+    expect(day.window).toEqual({ start: parisToUtc(DAY, 900), end: parisToUtc(DAY, 1620) });
+    expect(day.busy).toEqual([{ start: parisToUtc(DAY, 1200), end: parisToUtc(DAY, 1620) }]);
+  });
+});

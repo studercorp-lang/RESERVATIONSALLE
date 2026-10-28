@@ -7,6 +7,8 @@ import { clientPermissions, findBookingByToken } from "@/lib/booking/manage";
 import { STATUS_LABELS } from "@/lib/email/templates";
 import { formatPhone, formatSlot } from "@/lib/format";
 import { getSettings } from "@/lib/settings";
+import { slotClock } from "@/lib/availability/rules";
+import { getTimeOptions } from "@/lib/availability/search";
 import { utcToParis } from "@/lib/time";
 import { dateBounds } from "@/lib/validation/search-params";
 import { Alert, Card } from "@/components/ui";
@@ -49,8 +51,8 @@ export default async function ManageBookingPage({ params, searchParams }: Props)
   const settings = await getSettings();
   const perms = clientPermissions(booking, settings, now);
   const bounds = dateBounds(settings, now);
-  const local = utcToParis(booking.startsAt);
-  const localEnd = utcToParis(booking.endsAt);
+  const clock = slotClock(booking.startsAt, booking.endsAt);
+  const times = await getTimeOptions(booking.roomId);
   const c = booking.customer;
   const okMessage = sp.ok ? OK_MESSAGES[sp.ok] : undefined;
   const statusLabel = booking.status === "PENDING" && !perms.active ? STATUS_LABELS.EXPIRED : STATUS_LABELS[booking.status];
@@ -89,7 +91,8 @@ export default async function ManageBookingPage({ params, searchParams }: Props)
                 token={token}
                 minDate={bounds.minDate}
                 maxDate={bounds.maxDate}
-                defaults={{ date: local.isoDate, startMin: local.minutes, endMin: localEnd.isoDate === local.isoDate ? localEnd.minutes : 1440, attendees: booking.attendees }}
+                times={times}
+                defaults={{ date: utcToParis(booking.startsAt).isoDate, startMin: clock?.startMin, endMin: clock?.endMin, attendees: booking.attendees }}
               />
             </>
           ) : (

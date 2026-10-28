@@ -4,8 +4,9 @@
 import { addDays } from "date-fns";
 import { prisma } from "@/lib/db";
 import { getSettings, type Settings } from "@/lib/settings";
-import { parisToUtc } from "@/lib/time";
+import { parisToUtc, utcToParis } from "@/lib/time";
 import { estimatePriceCents } from "./pricing";
+import { timeOptions, type TimeOptions } from "./time-options";
 import { getBusyByRoom, getClosuresByRoom } from "./queries";
 import { checkSlotRules, conflictsWith, mergeIntervals, type Interval, type RejectionReason } from "./rules";
 
@@ -76,38 +77,47 @@ export async function searchAvailability(
 
 export type DaySchedule = {
   date: string;
+  window: Interval; // période affichée pour ce jour (de l'ouverture à la fermeture, éventuellement le lendemain)
   open: Interval[]; // plages d'ouverture (UTC)
   busy: Interval[]; // plages occupées ou fermées, fusionnées — sans aucune info client
 };
 
 /**
  * Planning d'une salle sur `days` jours à partir de `fromDate` (vue jour / semaine).
+ * Chaque « jour » couvre la plage d'ouverture qui commence ce jour-là, y compris
+ * sa partie après minuit (ex. vendredi 15h → samedi 3h).
  * Les plages occupées incluent le temps tampon, et ne révèlent jamais qui a réservé.
  */
 export async function getRoomSchedule(roomId: string, fromDate: string, days: number, now = new Date()): Promise<DaySchedule[]> {
   const room = await prisma.room.findUniqueOrThrow({ where: { id: roomId }, include: { openingHours: true } });
-  const dates = Array.from({ length: days }, (_, i) => {
-    const d = addDays(parisToUtc(fromDate, 12 * 60), i); // midi : à l'abri des changements d'heure
-    return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(d); // AAAA-MM-JJ
-  });
+  const dates = Array.from({ length: days }, (_, i) => utcToParis(addDays(parisToUtc(fromDate, 12 * 60), i)).isoDate); // midi : à l'abri des changements d'heure
   const from = parisToUtc(dates[0], 0);
-  const to = parisToUtc(dates[dates.length - 1], 1440);
+  const to = parisToUtc(dates[dates.length - 1], 2880);
   const [busy, closures] = await Promise.all([getBusyByRoom([roomId], from, to, now), getClosuresByRoom([roomId], from, to)]);
   const allBusy = mergeIntervals([...(busy.get(roomId) ?? []), ...(closures.get(roomId) ?? [])]);
 
   return dates.map((date) => {
-    const dayStart = parisToUtc(date, 0);
-    const dayEnd = parisToUtc(date, 1440);
-    const weekday = new Date(`${date}T12:00:00Z`).getUTCDay() || 7;
+    const weekday = utcToParis(parisToUtc(date, 12 * 60)).weekday;
+    const hours = room.openingHours.filter((h) => h.weekday === weekday).sort((a, b) => a.openMin - b.openMin);
+    const window = hours.length
+      ? { start: parisToUtc(date, Math.min(...hours.map((h) => h.openMin))), end: parisToUtc(date, Math.max(...hours.map((h) => h.closeMin))) }
+      : { start: parisToUtc(date, 0), end: parisToUtc(date, 1440) };
     return {
       date,
-      open: room.openingHours
-        .filter((h) => h.weekday === weekday)
-        .sort((a, b) => a.openMin - b.openMin)
-        .map((h) => ({ start: parisToUtc(date, h.openMin), end: parisToUtc(date, h.closeMin) })),
+      window,
+      open: hours.map((h) => ({ start: parisToUtc(date, h.openMin), end: parisToUtc(date, h.closeMin) })),
       busy: allBusy
-        .filter((b) => b.start < dayEnd && b.end > dayStart)
-        .map((b) => ({ start: b.start < dayStart ? dayStart : b.start, end: b.end > dayEnd ? dayEnd : b.end })),
+        .filter((b) => b.start < window.end && b.end > window.start)
+        .map((b) => ({ start: b.start < window.start ? window.start : b.start, end: b.end > window.end ? window.end : b.end })),
     };
   });
+}
+
+/** Heures à proposer dans les formulaires : celles d'une salle, ou de toutes les salles actives. */
+export async function getTimeOptions(roomId?: string): Promise<TimeOptions> {
+  const hours = await prisma.openingHours.findMany({
+    where: roomId ? { roomId } : { room: { active: true } },
+    select: { weekday: true, openMin: true, closeMin: true, lastStartMin: true },
+  });
+  return timeOptions(hours);
 }

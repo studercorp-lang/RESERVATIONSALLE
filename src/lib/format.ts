@@ -12,12 +12,22 @@ export const formatDate = (d: Date) => dateFmt.format(d);
 export const formatShortDate = (d: Date) => shortDateFmt.format(d);
 /** « 09h00 » */
 export const formatTime = (d: Date) => timeFmt.format(d).replace(":", "h");
-/** « lundi 11 janvier 2027, de 09h00 à 11h00 » */
-export const formatSlot = (start: Date, end: Date) => `${formatDate(start)}, de ${formatTime(start)} à ${formatTime(end)}`;
+/** « lundi 11 janvier 2027, de 09h00 à 11h00 » ; « …, de 22h00 à 03h00 le lendemain » si la fin tombe le jour suivant. */
+export function formatSlot(start: Date, end: Date): string {
+  const nextDay = formatDate(start) !== formatDate(end);
+  return `${formatDate(start)}, de ${formatTime(start)} à ${formatTime(end)}${nextDay && formatTime(end) !== "00h00" ? " le lendemain" : ""}`;
+}
 
-/** 540 → « 09h00 », 1440 → « 24h00 » */
+const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}h${String(min % 60).padStart(2, "0")}`;
+
+/**
+ * Minutes depuis minuit du jour de début → libellé.
+ * 540 → « 09h00 » ; 1440 → « minuit » ; 1620 → « 03h00 (lendemain) ».
+ */
 export function minutesLabel(min: number): string {
-  return `${String(Math.floor(min / 60)).padStart(2, "0")}h${String(min % 60).padStart(2, "0")}`;
+  if (min < 1440) return hhmm(min);
+  if (min === 1440) return "minuit";
+  return `${hhmm(min - 1440)} (lendemain)`;
 }
 
 /** « 09h00 » ou « 9:00 » → 540 ; null si invalide */

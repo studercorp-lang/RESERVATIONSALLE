@@ -3,6 +3,7 @@
 /** Formulaires du lien de gestion (annuler, modifier, corriger, se désinscrire). */
 import { useActionState, useState } from "react";
 import { SlotFields, type SearchDefaults } from "@/components/SearchForm";
+import type { TimeOptions } from "@/lib/availability/time-options";
 import { Alert, Button, inputClass } from "@/components/ui";
 import { cancelAction, contactAction, marketingAction, modifyAction, type ManageState } from "./actions";
 
@@ -52,12 +53,24 @@ export function CancelForm({ token, feePercent }: { token: string; feePercent: n
   );
 }
 
-export function ModifyForm({ token, defaults, minDate, maxDate }: { token: string; defaults: SearchDefaults; minDate: string; maxDate: string }) {
+export function ModifyForm({
+  token,
+  defaults,
+  minDate,
+  maxDate,
+  times,
+}: {
+  token: string;
+  defaults: SearchDefaults;
+  minDate: string;
+  maxDate: string;
+  times: TimeOptions;
+}) {
   const [state, action, pending] = useActionState(modifyAction.bind(null, token), null);
   return (
     <form action={action} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
-        <SlotFields idPrefix="mod-" defaults={defaults} minDate={minDate} maxDate={maxDate} />
+        <SlotFields idPrefix="mod-" defaults={defaults} minDate={minDate} maxDate={maxDate} times={times} />
       </div>
       <Feedback state={state} />
       <Button type="submit" disabled={pending}>{pending ? "Vérification…" : "Modifier ma demande"}</Button>

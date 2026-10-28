@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { addDays } from "date-fns";
 import { prisma } from "@/lib/db";
 import { formatEuros } from "@/lib/availability/pricing";
+import { timeOptions } from "@/lib/availability/time-options";
 import { getRoomSchedule } from "@/lib/availability/search";
 import { minutesLabel } from "@/lib/format";
 import { getSettings } from "@/lib/settings";
@@ -66,7 +67,7 @@ export default async function RoomPage({ params, searchParams }: Props) {
     (v) => JSON.stringify(v),
   );
   const hours = groupDays(
-    (d) => room.openingHours.filter((h) => h.weekday === d).map((h) => `${minutesLabel(h.openMin)} – ${minutesLabel(h.closeMin)}`).join(", ") || "Fermé",
+    (d) => room.openingHours.filter((h) => h.weekday === d).map((h) => `${minutesLabel(h.openMin)} – ${minutesLabel(h.closeMin)}${h.lastStartMin != null ? ` (dernier début ${minutesLabel(h.lastStartMin)})` : ""}`).join(", ") || "Fermé",
     (v) => v,
   );
   const price = (c?: number) => (c != null ? formatEuros(c) : "—");
@@ -135,7 +136,7 @@ export default async function RoomPage({ params, searchParams }: Props) {
 
       <Card>
         <h2 className="mb-4 text-xl font-semibold">Demander cette salle</h2>
-        <SearchForm action="/reserver" roomSlug={room.slug} {...bounds} defaults={{ date: sp.date === from ? from : undefined }} submitLabel="Continuer" />
+        <SearchForm action="/reserver" roomSlug={room.slug} times={timeOptions(room.openingHours)} {...bounds} defaults={{ date: sp.date === from ? from : undefined }} submitLabel="Continuer" />
       </Card>
 
       <section aria-labelledby="planning">

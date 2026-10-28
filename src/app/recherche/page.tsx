@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { searchAvailability } from "@/lib/availability/search";
+import { getTimeOptions, searchAvailability } from "@/lib/availability/search";
 import { formatEuros } from "@/lib/availability/pricing";
 import { minutesLabel } from "@/lib/format";
 import { getSettings } from "@/lib/settings";
@@ -20,6 +20,7 @@ export default async function SearchPage({ searchParams }: Props) {
   const settings = await getSettings();
   const bounds = dateBounds(settings);
   const { slot, errors } = slotFromParams(sp);
+  const times = await getTimeOptions();
   const results = slot ? await searchAvailability(slot, new Date(), settings) : [];
   const available = results.filter((r) => r.available);
   const tooBig = slot && results.length > 0 && results.every((r) => r.reasons.includes("OVER_CAPACITY"));
@@ -32,7 +33,7 @@ export default async function SearchPage({ searchParams }: Props) {
       <h1 className="text-2xl font-bold sm:text-3xl">Salles disponibles</h1>
 
       <Card className="my-6">
-        <SearchForm {...bounds} defaults={slot ?? {}} submitLabel="Modifier la recherche" />
+        <SearchForm {...bounds} times={times} defaults={slot ?? {}} submitLabel="Modifier la recherche" />
       </Card>
 
       {errors && <Alert>{Object.values(errors).join(" ")}</Alert>}
@@ -51,6 +52,12 @@ export default async function SearchPage({ searchParams }: Props) {
                 <p>Aucune de nos salles ne peut accueillir autant de personnes. Contactez-nous pour en discuter.</p>
               ) : common.includes("IN_PAST") || common.includes("TOO_SOON") ? (
                 <p>Ce créneau est trop proche pour une réservation en ligne (au moins {settings.minNoticeHours} h à l&apos;avance). Contactez-nous directement.</p>
+              ) : common.includes("START_TOO_LATE") || common.includes("OUTSIDE_OPENING_HOURS") ? (
+                <p>
+                  Nos salles peuvent être réservées avec un début entre <strong>{minutesLabel(times.starts[0])}</strong> et{" "}
+                  <strong>{minutesLabel(times.starts[times.starts.length - 1])}</strong>, et une fin au plus tard à{" "}
+                  <strong>{minutesLabel(times.ends[times.ends.length - 1])}</strong>.
+                </p>
               ) : common.includes("TOO_FAR") ? (
                 <p>Les réservations en ligne sont ouvertes jusqu&apos;à {settings.maxAdvanceMonths} mois à l&apos;avance.</p>
               ) : (

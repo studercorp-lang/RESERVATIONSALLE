@@ -2,10 +2,9 @@
  * Formulaire de recherche de créneau.
  * Simple formulaire HTML (méthode GET) : fonctionne même sans JavaScript.
  */
+import { defaultTimes, type TimeOptions } from "@/lib/availability/time-options";
 import { minutesLabel } from "@/lib/format";
 import { inputClass } from "./ui";
-
-const TIMES = Array.from({ length: (24 - 7) * 4 + 1 }, (_, i) => 7 * 60 + i * 15); // 07h00 → 24h00
 
 /** Champs date / début / fin / personnes, réutilisés par la recherche et la modification. */
 export function SlotFields({
@@ -13,13 +12,17 @@ export function SlotFields({
   minDate,
   maxDate,
   idPrefix = "",
+  times,
 }: {
   defaults?: SearchDefaults;
   minDate: string;
   maxDate: string;
   idPrefix?: string;
+  /** Heures proposées, calculées depuis les horaires d'ouverture. */
+  times: TimeOptions;
 }) {
   const id = (k: string) => `${idPrefix}${k}`;
+  const fallback = defaultTimes(times);
   return (
     <>
       <div className="sm:col-span-2 lg:col-span-1">
@@ -41,8 +44,8 @@ export function SlotFields({
         <label htmlFor={id("debut")} className="mb-1 block text-sm font-medium">
           Heure de début
         </label>
-        <select id={id("debut")} name="debut" required defaultValue={defaults.startMin ?? 9 * 60} className={inputClass}>
-          {TIMES.slice(0, -1).map((t) => (
+        <select id={id("debut")} name="debut" required defaultValue={defaults.startMin ?? fallback.startMin} className={inputClass}>
+          {times.starts.map((t) => (
             <option key={t} value={t}>
               {minutesLabel(t)}
             </option>
@@ -53,8 +56,8 @@ export function SlotFields({
         <label htmlFor={id("fin")} className="mb-1 block text-sm font-medium">
           Heure de fin
         </label>
-        <select id={id("fin")} name="fin" required defaultValue={defaults.endMin ?? 12 * 60} className={inputClass}>
-          {TIMES.slice(1).map((t) => (
+        <select id={id("fin")} name="fin" required defaultValue={defaults.endMin ?? fallback.endMin} className={inputClass}>
+          {times.ends.map((t) => (
             <option key={t} value={t}>
               {minutesLabel(t)}
             </option>
@@ -89,8 +92,10 @@ export function SearchForm({
   minDate,
   maxDate,
   roomSlug,
+  times,
   submitLabel = "Voir les salles disponibles",
 }: {
+  times: TimeOptions;
   action?: string;
   defaults?: SearchDefaults;
   minDate: string;
@@ -101,7 +106,7 @@ export function SearchForm({
   return (
     <form action={action} method="get" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
       {roomSlug && <input type="hidden" name="salle" value={roomSlug} />}
-      <SlotFields defaults={defaults} minDate={minDate} maxDate={maxDate} />
+      <SlotFields defaults={defaults} minDate={minDate} maxDate={maxDate} times={times} />
       <button
         type="submit"
         className="rounded-md bg-brand px-5 py-3 font-semibold text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-1"

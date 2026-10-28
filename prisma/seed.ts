@@ -21,7 +21,7 @@ const ROOMS = [
     equipment: ["Vidéoprojecteur", "Sonorisation", "Micros sans fil", "Wi-Fi", "Office traiteur"],
     accessiblePmr: true,
     minDurationMin: 120,
-    maxDurationMin: 900,
+    maxDurationMin: 720,
     bufferMin: 60,
     // Tarifs TTC en euros : [heure, demi-journée, journée], semaine puis week-end
     weekPrices: [150, 550, 950],
@@ -48,7 +48,7 @@ const ROOMS = [
     equipment: ["Écran 55 pouces", "Tableau blanc", "Wi-Fi"],
     accessiblePmr: false,
     minDurationMin: 60,
-    maxDurationMin: 600,
+    maxDurationMin: 720,
     bufferMin: 15,
     weekPrices: [45, 160, 280],
     weekendPrices: [60, 220, 380],
@@ -76,12 +76,14 @@ async function main() {
       data: {
         ...data,
         sortOrder: i,
-        // Ouvert 7j/7 de 8h à 23h (minuit le vendredi et le samedi)
+        // Horaires QUAI 19 : ouvert 7j/7 de 15h00 à 03h00 le lendemain,
+        // début de réservation au plus tard à 22h00.
         openingHours: {
           create: [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({
             weekday,
-            openMin: 8 * 60,
-            closeMin: weekday === 5 || weekday === 6 ? 24 * 60 : 23 * 60,
+            openMin: 15 * 60,
+            closeMin: 24 * 60 + 3 * 60, // 03h00 le lendemain
+            lastStartMin: 22 * 60,
           })),
         },
         priceRules: {
@@ -103,11 +105,12 @@ async function main() {
   // Quelques réservations dans les prochains jours, à heures « rondes » de Paris
   const today = utcToParis(new Date()).isoDate;
   const day = (offset: number) => utcToParis(addDays(parisToUtc(today, 12 * 60), offset)).isoDate;
+  // Horaires en minutes depuis minuit du jour de début ; au-delà de 1440 = lendemain (02h00 = 1560)
   const demo = [
-    { room: 0, customer: 0, date: day(3), start: 9 * 60, end: 18 * 60, attendees: 60, status: BookingStatus.CONFIRMED },
-    { room: 1, customer: 1, date: day(3), start: 14 * 60, end: 17 * 60, attendees: 20, status: BookingStatus.PENDING },
-    { room: 2, customer: 2, date: day(5), start: 10 * 60, end: 12 * 60, attendees: 8, status: BookingStatus.CONFIRMED },
-    { room: 0, customer: 2, date: day(10), start: 18 * 60, end: 23 * 60, attendees: 75, status: BookingStatus.PENDING },
+    { room: 0, customer: 0, date: day(3), start: 18 * 60, end: 26 * 60, attendees: 60, status: BookingStatus.CONFIRMED },
+    { room: 1, customer: 1, date: day(3), start: 15 * 60, end: 18 * 60, attendees: 20, status: BookingStatus.PENDING },
+    { room: 2, customer: 2, date: day(5), start: 19 * 60, end: 23 * 60, attendees: 8, status: BookingStatus.CONFIRMED },
+    { room: 0, customer: 2, date: day(10), start: 20 * 60, end: 27 * 60, attendees: 75, status: BookingStatus.PENDING },
   ];
   for (const [i, b] of demo.entries()) {
     const room = rooms[b.room];
