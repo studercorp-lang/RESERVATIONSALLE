@@ -1,94 +1,495 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>QUAI 19 — Location de salles à Lyon</title>
-  <meta name="description" content="Louez une salle pour vos réunions, séminaires, soirées et réceptions chez QUAI 19, quai Saint-Antoine à Lyon.">
-  <link rel="stylesheet" href="assets/style.css">
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="QUAI 19, 19 quai Saint-Antoine à Lyon : La Mezzanine, Le Lounge et Le Club à réserver pour vos événements.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<style>[hidden]{display:none!important}</style>
 </head>
 <body>
-  <a class="skip" href="#contenu">Aller au contenu</a>
-
-  <header class="site-header">
-    <div class="wrap header-inner">
-      <!-- 🖼️ Logo : remplacez « QUAI 19 » par <img src="assets/logo.svg" alt="QUAI 19" height="40"> -->
-      <a class="logo" href="index.html">QUAI 19</a>
-      <nav aria-label="Navigation principale">
-        <ul><li><a href="salles.html">Nos salles</a></li><li><a href="reserver.html">Réserver</a></li></ul>
-      </nav>
-    </div>
-  </header>
-
-  <main id="contenu" class="wrap">
-    <section aria-labelledby="titre">
-      <h1 id="titre">Des salles pour vos événements, au bord de la Saône</h1>
-      <p class="lead">Réunions, séminaires, soirées, réceptions : choisissez votre salle et envoyez votre demande. Notre équipe vous répond avec un devis personnalisé.</p>
-      <p><a class="button" href="reserver.html">Demander une réservation</a> <a class="button-secondary" href="salles.html">Découvrir les salles</a></p>
-    </section>
-
-    <section aria-labelledby="titre-salles">
-      <h2 id="titre-salles">Nos salles</h2>
-      <ul class="grid grid-3" style="list-style:none;padding:0;margin:0">
-        <li class="card">
-          <!-- 📷 Photo : remplacez la ligne suivante par <img class="photo" src="photos/la-verriere.jpg" alt="Description de la photo"> -->
-          <div class="photo-placeholder" aria-hidden="true">La Verrière</div>
-          <h3 style="margin-top:12px">La Verrière</h3>
-          <p class="muted small" style="margin:0">Jusqu'à 80 personnes · Accessible PMR</p>
-          <p>Grande salle lumineuse sous verrière, idéale pour les séminaires, conférences, soirées et réceptions.</p>
-          <a href="salles.html#la-verriere">Voir la salle et les tarifs<span class="sr-only"> : La Verrière</span></a>
-        </li>
-        <li class="card">
-          <!-- 📷 Photo : remplacez la ligne suivante par <img class="photo" src="photos/le-salon-saone.jpg" alt="Description de la photo"> -->
-          <div class="photo-placeholder" aria-hidden="true">Le Salon Saône</div>
-          <h3 style="margin-top:12px">Le Salon Saône</h3>
-          <p class="muted small" style="margin:0">Jusqu'à 30 personnes · Accessible PMR</p>
-          <p>Salon chaleureux avec vue sur la Saône, pour réunions, ateliers, dîners et soirées privées.</p>
-          <a href="salles.html#le-salon-saone">Voir la salle et les tarifs<span class="sr-only"> : Le Salon Saône</span></a>
-        </li>
-        <li class="card">
-          <!-- 📷 Photo : remplacez la ligne suivante par <img class="photo" src="photos/l-atelier.jpg" alt="Description de la photo"> -->
-          <div class="photo-placeholder" aria-hidden="true">L'Atelier</div>
-          <h3 style="margin-top:12px">L'Atelier</h3>
-          <p class="muted small" style="margin:0">Jusqu'à 12 personnes</p>
-          <p>Petite salle intimiste pour réunions de travail, entretiens et petits comités.</p>
-          <a href="salles.html#l-atelier">Voir la salle et les tarifs<span class="sr-only"> : L'Atelier</span></a>
-        </li>
+<title>QUAI 19</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style id="q19-style">
+/* Mise en page : en-tête sobre, une colonne de contenu, cartes pour les salles et infos pratiques. */
+:root {
+  --brand: #0f5c5a; --brand-dark: #0a4341; --brand-soft: #e3efee;
+  --ink: #1c1c1c; --muted: #55534e; --surface: #f6f5f2; --line: #d6d3cc; --paper: #ffffff; --danger: #b42318;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --radius: 8px;
+  color-scheme: light;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--surface); color: var(--ink); font: 16px/1.6 var(--font); }
+a { color: var(--brand); }
+:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+h1[tabindex="-1"]:focus { outline: none; } /* titre focalisé au changement de rubrique (lecteurs d'écran) */
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+.wrap { max-width: 1040px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: 8px; top: 8px; z-index: 10; background: var(--paper); padding: 8px 12px; border-radius: var(--radius); }
+.site-header { background: var(--paper); border-bottom: 1px solid var(--line); }
+.header-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; min-height: 60px; }
+.logo { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.18em; color: var(--ink); text-decoration: none; }
+.site-header ul { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; font-weight: 500; }
+.site-header nav a { color: var(--ink); text-decoration: none; }
+.site-header nav a:hover, .site-header nav a[aria-current="page"] { text-decoration: underline; text-underline-offset: 4px; }
+main { padding-block: 32px 48px; }
+h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); line-height: 1.15; margin: 0 0 12px; text-wrap: balance; }
+h2, .h3 { margin: 40px 0 12px; text-wrap: balance; }
+h2 { font-size: 1.5rem; }
+h3, .h3 { font-size: 1.125rem; }
+.card h2.h3, .card h3 { margin-top: 0; }
+.card h3 + p, .card h2 + p { margin-top: 4px; }
+p { margin: 0 0 12px; }
+.eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem; color: var(--brand); font-weight: 600; margin-bottom: 8px; }
+.lead { font-size: 1.15rem; color: var(--muted); max-width: 40rem; }
+.muted { color: var(--muted); }
+.small { font-size: 0.875rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.button, .button-secondary { display: inline-block; font-weight: 600; text-decoration: none; padding: 13px 20px; border-radius: var(--radius); }
+.button { background: var(--brand); color: #fff; border: 1px solid var(--brand); }
+.button:hover { background: var(--brand-dark); }
+.button-secondary { background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; min-width: 0; }
+.grid { display: grid; gap: 16px; }
+@media (min-width: 720px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } .grid-2 { grid-template-columns: repeat(2, 1fr); } }
+section.grid { margin-top: 40px; }
+.plain { list-style: none; padding: 0; margin: 0; }
+.room { display: flex; flex-direction: column; gap: 6px; }
+.room h3 { margin: 10px 0 0; }
+.room p { margin: 0; }
+.text-link { margin-top: auto; padding-top: 8px; font-weight: 600; }
+.photo-placeholder { aspect-ratio: 16 / 9; max-width: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--brand-soft), var(--line)); color: var(--brand); font-weight: 700; letter-spacing: 0.1em; font-size: 1.35rem; }
+.prices { margin: 0; display: grid; gap: 12px; }
+.prices div { display: grid; gap: 2px; }
+.prices dt { font-size: 0.875rem; color: var(--muted); }
+.prices dd { margin: 0; }
+.steps { counter-reset: step; list-style: none; margin: 0; display: grid; gap: 14px; }
+.steps li { counter-increment: step; position: relative; padding-left: 46px; min-height: 34px; }
+.steps li::before { content: counter(step); position: absolute; left: 0; top: -2px; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--brand); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.notice-rgpd { margin-top: 24px; max-width: 46rem; }
+.selectable { user-select: all; }
+.legal { max-width: 46rem; }
+.legal h2 { font-size: 1.25rem; margin-top: 28px; }
+.legal ul, .legal ol { padding-left: 1.4rem; }
+.legal table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+.legal th, .legal td { border: 1px solid var(--line); padding: 8px; text-align: left; vertical-align: top; }
+.legal th { background: var(--surface); }
+.site-footer { background: var(--paper); border-top: 1px solid var(--line); font-size: 0.9rem; color: var(--muted); padding-block: 24px; }
+.footer-inner { display: flex; flex-direction: column; gap: 12px; }
+.footer-inner p { margin: 0 0 4px; }
+@media (min-width: 720px) { .footer-inner { flex-direction: row; justify-content: space-between; } }
+.site-footer ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.site-footer strong { color: var(--ink); }
+/* Espace propriétaire (visible uniquement pour la propriétaire du site) */
+.owner-toggle { position: fixed; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+  background: var(--ink); color: #fff; border: 0; border-radius: 999px; padding: 12px 18px; font: 600 0.9rem var(--font); cursor: pointer; box-shadow: 0 4px 16px rgb(0 0 0 / 0.2); }
+.owner-panel { position: fixed; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(72px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+  width: min(360px, calc(100vw - 32px)); background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; box-shadow: 0 8px 32px rgb(0 0 0 / 0.18); }
+.owner-panel h2 { margin: 0 0 4px; font-size: 1.05rem; }
+.owner-panel label { display: block; font-weight: 600; font-size: 0.9rem; margin-top: 12px; }
+.owner-panel input { width: 100%; font: inherit; padding: 10px; border: 1px solid var(--line); border-radius: 6px; margin-top: 4px; background: var(--paper); color: var(--ink); }
+.owner-panel .row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.owner-panel button { font: 600 0.95rem var(--font); padding: 10px 16px; border-radius: 6px; cursor: pointer; }
+.owner-panel .save { background: var(--brand); color: #fff; border: 1px solid var(--brand); }
+.owner-panel .cancel { background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
+.owner-msg { margin-top: 10px; font-size: 0.875rem; }
+.owner-msg.error { color: var(--danger); }
+</style>
+<template id="q19-site"><a class="skip" href="#contenu">Aller au contenu</a>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="logo" href="#accueil">QUAI 19</a>
+    <nav aria-label="Navigation principale">
+      <ul>
+        <li><a href="#salles" data-nav="salles">Nos salles</a></li>
+        <li><a href="#reserver" data-nav="reserver">Réserver</a></li>
       </ul>
-    </section>
-
-    <section aria-labelledby="titre-comment">
-      <h2 id="titre-comment">Comment réserver ?</h2>
-      <div class="grid grid-2">
-        <div class="card">
-          <ol class="steps">
-            <li><strong>Choisissez</strong> votre salle, votre date et vos horaires.</li>
-            <li><strong>Envoyez votre demande</strong> grâce au formulaire en ligne.</li>
-            <li><strong>Recevez votre devis</strong> : la réservation est confirmée après votre accord.</li>
-          </ol>
-        </div>
-        <div class="card">
-          <h3>Horaires</h3>
-          <p style="margin:0">Du <strong>mardi au dimanche</strong>, de <strong>15h00 à 3h00</strong> du matin.<br>
-          Début de réservation au plus tard à <strong>22h00</strong>. Fermé le lundi.</p>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="wrap footer-inner">
-      <p style="margin:0"><strong>QUAI 19</strong> — 19 quai Saint-Antoine, 69002 Lyon<br>
-        <a href="mailto:contact@exemple.fr">contact@exemple.fr</a> · <a href="tel:+33400000000">+33 4 00 00 00 00</a></p>
-      <nav aria-label="Informations légales">
-        <ul>
-          <li><a href="mentions-legales.html">Mentions légales</a></li>
-          <li><a href="confidentialite.html">Politique de confidentialité</a></li>
-          <li><a href="conditions-reservation.html">Conditions de réservation</a></li>
-        </ul>
-      </nav>
+    </nav>
+  </div>
+</header>
+<main id="contenu" class="wrap">
+<section class="view" data-view="accueil" aria-label="Accueil">
+<section class="hero">
+  <p class="eyebrow">19 quai Saint-Antoine · Lyon 2e</p>
+  <h1 tabindex="-1">Trois salles pour vos événements, au bord de la Saône</h1>
+  <p class="lead">La Mezzanine, Le Lounge et Le Club accueillent vos soirées et événements privés ou professionnels. Envoyez votre demande : notre équipe vous répond avec une proposition sur mesure.</p>
+  <p class="actions"><a class="button" href="#reserver">Demander une réservation</a> <a class="button-secondary" href="#salles">Découvrir les salles</a></p>
+</section>
+<section aria-labelledby="t-salles">
+  <h2 id="t-salles">Nos salles</h2>
+  <ul class="grid grid-3 plain">
+<li class="card room">
+  <div class="photo-placeholder" aria-hidden="true">La Mezzanine</div>
+  <h3>La Mezzanine</h3>
+  <p class="muted small">Photos et description à venir.</p>
+  <p>Mise à disposition à partir de <strong>700 €</strong> de minimum de consommation.</p>
+  <a href="#reserver" class="text-link">Demander La Mezzanine</a>
+</li>
+<li class="card room">
+  <div class="photo-placeholder" aria-hidden="true">Le Lounge</div>
+  <h3>Le Lounge</h3>
+  <p class="muted small">Photos et description à venir.</p>
+  <p>Mise à disposition à partir de <strong>700 €</strong> de minimum de consommation.</p>
+  <a href="#reserver" class="text-link">Demander Le Lounge</a>
+</li>
+<li class="card room">
+  <div class="photo-placeholder" aria-hidden="true">Le Club</div>
+  <h3>Le Club</h3>
+  <p class="muted small">Photos et description à venir.</p>
+  <p>Mise à disposition à partir de <strong>700 €</strong> de minimum de consommation.</p>
+  <a href="#reserver" class="text-link">Demander Le Club</a>
+</li>
+  </ul>
+</section>
+<section class="grid grid-2" aria-label="Informations pratiques">
+  <div class="card"><h2 class="h3">Horaires</h2><p>Du <strong>mardi au dimanche</strong>, de <strong>15h00 à 3h00</strong> du matin.<br>
+Début de réservation au plus tard à <strong>22h00</strong>. Fermé le lundi.</p></div>
+  <div class="card"><h2 class="h3">Tarifs</h2><dl class="prices">
+  <div><dt>Mise à disposition d'une salle</dt><dd><strong>700 €</strong> de minimum de consommation<span class="muted"> (minimum spend)</span></dd></div>
+  <div><dt>Toute autre demande</dt><dd>Privatisation, prestations particulières… <strong>sur devis</strong></dd></div>
+</dl></div>
+</section>
+<section aria-labelledby="t-comment">
+  <h2 id="t-comment">Comment réserver ?</h2>
+  <ol class="steps card">
+    <li><strong>Choisissez</strong> votre salle, votre date et vos horaires.</li>
+    <li><strong>Envoyez votre demande</strong> grâce au formulaire en ligne.</li>
+    <li><strong>Recevez notre proposition</strong> : la réservation est confirmée après votre accord.</li>
+  </ol>
+</section></section>
+<section class="view" data-view="salles" aria-label="Nos salles">
+<h1 tabindex="-1">Nos salles</h1>
+<p class="lead">Trois espaces à privatiser au 19 quai Saint-Antoine. Photos et descriptions détaillées bientôt en ligne.</p>
+<ul class="grid grid-3 plain">
+<li class="card room">
+  <div class="photo-placeholder" aria-hidden="true">La Mezzanine</div>
+  <h3>La Mezzanine</h3>
+  <p class="muted small">Photos et description à venir.</p>
+  <p>Mise à disposition à partir de <strong>700 €</strong> de minimum de consommation.</p>
+  <a href="#reserver" class="text-link">Demander La Mezzanine</a>
+</li>
+<li class="card room">
+  <div class="photo-placeholder" aria-hidden="true">Le Lounge</div>
+  <h3>Le Lounge</h3>
+  <p class="muted small">Photos et description à venir.</p>
+  <p>Mise à disposition à partir de <strong>700 €</strong> de minimum de consommation.</p>
+  <a href="#reserver" class="text-link">Demander Le Lounge</a>
+</li>
+<li class="card room">
+  <div class="photo-placeholder" aria-hidden="true">Le Club</div>
+  <h3>Le Club</h3>
+  <p class="muted small">Photos et description à venir.</p>
+  <p>Mise à disposition à partir de <strong>700 €</strong> de minimum de consommation.</p>
+  <a href="#reserver" class="text-link">Demander Le Club</a>
+</li>
+</ul>
+<h2>Tarifs</h2>
+<div class="card"><dl class="prices">
+  <div><dt>Mise à disposition d'une salle</dt><dd><strong>700 €</strong> de minimum de consommation<span class="muted"> (minimum spend)</span></dd></div>
+  <div><dt>Toute autre demande</dt><dd>Privatisation, prestations particulières… <strong>sur devis</strong></dd></div>
+</dl>
+<p class="small muted">Une caution de 500 € est demandée pour toute réservation. Voir les <a href="#conditions">conditions de réservation</a>.</p></div>
+<h2>Horaires</h2>
+<div class="card"><p>Du <strong>mardi au dimanche</strong>, de <strong>15h00 à 3h00</strong> du matin.<br>
+Début de réservation au plus tard à <strong>22h00</strong>. Fermé le lundi.</p></div></section>
+<section class="view" data-view="reserver" aria-label="Réserver">
+<h1 tabindex="-1">Demander une réservation</h1>
+<p class="lead">Remplissez le formulaire en ligne : il ne prend que quelques minutes. Votre demande ne vaut pas réservation : nous vérifions la disponibilité et revenons vers vous avec une proposition.</p>
+<div class="grid grid-2">
+  <div class="card">
+    <h2 class="h3">Avant de commencer</h2>
+    <ul>
+      <li>Salles : La Mezzanine, Le Lounge, Le Club.</li>
+      <li>Ouvert du <strong>mardi au dimanche, de 15h00 à 3h00</strong> ; début au plus tard à <strong>22h00</strong>.</li>
+      <li>Mise à disposition d'une salle : <strong>700 €</strong> de minimum de consommation ; toute autre demande sur devis.</li>
+      <li>Caution de <strong>500 €</strong>, gérée directement avec notre équipe.</li>
+    </ul>
+    <p><a class="button" href="https://tally.so/r/RWWrNK" target="_blank" rel="noopener">Remplir le formulaire de demande</a></p>
+    <p class="small muted">Le formulaire s'ouvre dans un nouvel onglet. Il est hébergé par notre prestataire Tally (données stockées dans l'Union européenne).</p>
+  </div>
+  <div class="card" data-si="contact">
+    <h2 class="h3">Vous préférez nous contacter ?</h2>
+    <p data-si="email">E-mail : <a href="{{EMAIL_HREF}}" class="selectable">{{EMAIL}}</a></p>
+<p data-si="tel">Téléphone : <a href="{{TEL_HREF}}" class="selectable">{{TEL}}</a></p>
+    <h3>Annulation</h3>
+    <p class="small">Une demande non confirmée peut être annulée sans frais. Une fois la réservation confirmée, des frais s'appliquent selon la date d'annulation : aucun frais à 30 jours ou plus, 25 % de 29 à 16 jours, 50 % de 15 à 8 jours, 90 % à 7 jours ou moins avant le jour réservé ; 100 % en cas d'absence. Détails dans nos <a href="#conditions">conditions de réservation</a>.</p>
+  </div>
+</div>
+<p class="small muted notice-rgpd">Les informations que vous envoyez sont traitées par QUAI 19 pour répondre à votre demande et vous adresser une proposition. Elles sont conservées 3 ans après votre dernière réservation. Vous pouvez exercer vos droits à tout moment en écrivant à {{EMAIL_TEXTE}}. En savoir plus : <a href="#confidentialite">politique de confidentialité</a>.</p></section>
+<section class="view" data-view="mentions-legales" aria-label="Mentions légales"><article class="legal"><h1 tabindex="-1">Mentions légales</h1>
+<h2>Éditeur du site</h2>
+<ul>
+<li><strong>Raison sociale :</strong> [À COMPLÉTER — ex. QUAI 19 SAS]</li>
+<li><strong>Forme juridique :</strong> [À COMPLÉTER]</li>
+<li><strong>Capital social :</strong> [À COMPLÉTER] €</li>
+<li><strong>Siège social :</strong> 19 quai Saint-Antoine, 69002 Lyon</li>
+<li><strong>RCS :</strong> [À COMPLÉTER]</li>
+<li><strong>SIRET :</strong> [À COMPLÉTER]</li>
+<li><strong>N° de TVA intracommunautaire :</strong> [À COMPLÉTER]</li>
+<li><strong>Contact :</strong> {{EMAIL_TEXTE}}</li>
+</ul>
+<p><strong>Directeur ou directrice de la publication :</strong> [À COMPLÉTER]</p>
+<h2>Hébergement du site</h2>
+<p>Hébergeur : [À COMPLÉTER — nom, adresse et téléphone de l'hébergeur]</p>
+<h2>Formulaire de demande</h2>
+<p>Le formulaire de demande de réservation est fourni par <strong>Tally BV</strong> (Belgique) — tally.so. [⚠️ À VÉRIFIER : coordonnées légales de Tally à jour.]</p>
+<h2>Propriété intellectuelle</h2>
+<p>L&#39;ensemble des contenus de ce site (textes, photographies, logo) est la propriété de QUAI 19 ou de ses partenaires, sauf mention contraire. Toute reproduction sans autorisation est interdite.</p>
+<h2>Données personnelles et cookies</h2>
+<p>Voir notre <a href="#confidentialite">politique de confidentialité</a>.</p>
+</article></section>
+<section class="view" data-view="confidentialite" aria-label="Politique de confidentialité"><article class="legal"><h1 tabindex="-1">Politique de confidentialité</h1>
+<p><em>Dernière mise à jour : [À COMPLÉTER — date]</em></p>
+<p>Cette page explique quelles données nous collectons quand vous demandez à réserver une salle, pourquoi, combien de temps nous les gardons et comment exercer vos droits.</p>
+<h2>1. Qui est responsable du traitement ?</h2>
+<p><strong>[À COMPLÉTER — raison sociale]</strong>, 19 quai Saint-Antoine, 69002 Lyon, représentée par [À COMPLÉTER].
+Contact pour vos données : {{EMAIL_TEXTE}}.</p>
+<h2>2. Quelles données collectons-nous ?</h2>
+<p><strong>Sur ce site</strong> : QUAI 19 n&#39;y ajoute aucun formulaire, aucun outil de statistiques et aucune publicité. Ce site ne dépose aucun cookie.</p>
+<p><strong>Par le formulaire de demande</strong> (service Tally), par e-mail ou par téléphone :</p>
+<ul>
+<li><strong>obligatoires</strong> : nom, prénom, adresse e-mail, téléphone ;</li>
+<li><strong>facultatives</strong> : société ou organisation, commentaire sur vos besoins ;</li>
+<li><strong>votre demande</strong> : salle, date, horaires, nombre de personnes ;</li>
+<li><strong>vos choix</strong> : acceptation des conditions de réservation et, si vous l&#39;avez donné, votre accord pour recevoir nos informations commerciales.</li>
+</ul>
+<p>Merci de <strong>ne pas indiquer d&#39;informations sensibles</strong> (santé, opinions…) dans le commentaire. Aucun paiement n&#39;est effectué en ligne.</p>
+<h2>3. Pourquoi et sur quelle base légale ?</h2>
+<table>
+<thead>
+<tr>
+<th>Finalité</th>
+<th>Base légale</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Répondre à votre demande, établir une proposition, gérer la réservation</td>
+<td>Mesures précontractuelles et exécution du contrat</td>
+</tr>
+<tr>
+<td>Vous envoyer nos offres, <strong>seulement si vous avez coché la case prévue</strong></td>
+<td>Votre consentement, retirable à tout moment</td>
+</tr>
+<tr>
+<td>Facturation et comptabilité (si la réservation aboutit)</td>
+<td>Obligation légale</td>
+</tr>
+</tbody></table>
+<h2>4. Qui a accès à vos données ?</h2>
+<ul>
+<li>Les membres habilités de l&#39;équipe QUAI 19 ;</li>
+<li>nos <strong>sous-traitants</strong>, liés par un contrat conforme à l&#39;article 28 du RGPD :<ul>
+<li><strong>formulaire de demande</strong> : Tally BV (Belgique), données stockées dans l&#39;Union européenne ;</li>
+<li><strong>messagerie électronique</strong> de QUAI 19 : [À COMPLÉTER — fournisseur de messagerie].</li>
+</ul>
+</li>
+</ul>
+<p>Vos données ne sont ni vendues, ni louées, ni cédées.</p>
+<h2>5. Transferts hors de l&#39;Union européenne</h2>
+<p>[⚠️ À VÉRIFIER — Tally indique stocker les données en Belgique mais recourir à des prestataires pouvant traiter des données hors UE ; vérifiez sa liste de sous-traitants et les garanties prévues, ainsi que pour l&#39;hébergeur du site et la messagerie.]</p>
+<h2>6. Combien de temps les conservons-nous ?</h2>
+<ul>
+<li><strong>Demandes et réservations</strong> : 3 ans après la date de la dernière réservation, puis suppression ;</li>
+<li><strong>prospection commerciale</strong> (si vous avez donné votre accord) : 3 ans après notre dernier contact avec vous, ou jusqu&#39;au retrait de votre consentement ;</li>
+<li><strong>pièces comptables</strong> : 10 ans, comme l&#39;exige la loi.</li>
+</ul>
+<h2>7. Vos droits</h2>
+<p>Vous pouvez à tout moment <strong>accéder</strong> à vos données, les <strong>corriger</strong>, les <strong>effacer</strong>, <strong>limiter</strong> leur utilisation, vous y <strong>opposer</strong>, demander leur <strong>portabilité</strong>, <strong>retirer votre consentement</strong> à la prospection et définir des directives sur leur sort après votre décès.</p>
+<p>Écrivez-nous à {{EMAIL_TEXTE}} depuis l&#39;adresse utilisée lors de votre demande. Nous vous répondons <strong>sous un mois</strong>.</p>
+<p>Vous pouvez aussi introduire une réclamation auprès de la <strong>CNIL</strong> — 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07 — <a href="https://www.cnil.fr/fr/plaintes">www.cnil.fr</a>.</p>
+</article></section>
+<section class="view" data-view="conditions" aria-label="Conditions de réservation"><article class="legal"><h1 tabindex="-1">Conditions de réservation</h1>
+<p><em>Version [À COMPLÉTER — ex. 2026-11] — en vigueur au [À COMPLÉTER — date]</em></p>
+<p>Les présentes conditions s&#39;appliquent à toute demande de réservation d&#39;une salle de QUAI 19 (La Mezzanine, Le Lounge, Le Club), 19 quai Saint-Antoine, 69002 Lyon (« QUAI 19 »), par un particulier ou un professionnel (« le Client »).</p>
+<h2>1. Demande de réservation</h2>
+<p>1.1. La demande envoyée par le formulaire, par e-mail ou par téléphone <strong>ne constitue pas une réservation ferme</strong>. QUAI 19 vérifie la disponibilité et répond sous [À COMPLÉTER — ex. 48 heures ouvrées].</p>
+<p>1.2. La réservation devient <strong>ferme</strong> à la confirmation écrite de QUAI 19, après acceptation de sa proposition par le Client [À COMPLÉTER — ex. devis signé et/ou acompte de X %].</p>
+<p>1.3. Les salles sont réservables du mardi au dimanche, de 15h00 à 3h00 du matin, avec un début au plus tard à 22h00.</p>
+<h2>2. Prix et paiement</h2>
+<p>2.1. La mise à disposition d&#39;une salle est soumise à un <strong>minimum de consommation de 700 €</strong> (« minimum spend »). [⚠️ À VÉRIFIER — préciser : montant TTC, ce qui est décompté (boissons, restauration…), et ce qui se passe si le minimum n&#39;est pas atteint.]</p>
+<p>2.2. Toute autre demande (privatisation, prestations particulières…) fait l&#39;objet d&#39;un <strong>devis</strong>.</p>
+<p>2.3. Modalités de paiement : [À COMPLÉTER].</p>
+<h2>3. Caution</h2>
+<p>3.1. Une <strong>caution de 500 €</strong> est demandée pour toute réservation : [À COMPLÉTER — forme (chèque, empreinte bancaire…), moment du dépôt].</p>
+<p>3.2. Elle est restituée [À COMPLÉTER — délai] après l&#39;état des lieux de sortie, déduction faite, sur justificatif, des sommes dues au titre des dégradations, du nettoyage exceptionnel ou du dépassement d&#39;horaire.</p>
+<p>3.3. [⚠️ À VÉRIFIER — préciser les cas de retenue et la procédure en cas de désaccord.]</p>
+<h2>4. Modification</h2>
+<p>Toute modification (date, horaires, nombre de personnes) est à demander à QUAI 19 ; elle est acceptée selon les disponibilités.</p>
+<h2>5. Annulation par le Client</h2>
+<p>5.1. Une <strong>demande non encore confirmée</strong> peut être annulée <strong>sans frais</strong>.</p>
+<p>5.2. Pour une <strong>réservation confirmée</strong>, des frais d&#39;annulation s&#39;appliquent selon la date d&#39;annulation par rapport au jour réservé : <strong>aucun frais à 30 jours ou plus, 25 % de 29 à 16 jours, 50 % de 15 à 8 jours, 90 % à 7 jours ou moins avant le jour réservé ; 100 % en cas d&#39;absence</strong>. [⚠️ À VÉRIFIER — base de calcul : minimum de consommation ou montant du devis.]</p>
+<p>5.3. [⚠️ À VÉRIFIER avec votre juriste — pour les clients particuliers, une clause permettant de conserver des sommes sans contrepartie équivalente en cas d&#39;annulation par le professionnel est présumée abusive ; le montant des frais peut aussi être réduit par un juge s&#39;il est jugé excessif.]</p>
+<h2>6. Annulation par QUAI 19</h2>
+<p>En cas d&#39;annulation par QUAI 19 (force majeure, fermeture administrative, impossibilité de mettre la salle à disposition), le Client est <strong>intégralement remboursé</strong>. [⚠️ À VÉRIFIER — hors force majeure, prévoir une indemnité équivalente aux frais que le Client supporterait lui-même à la même date.]</p>
+<h2>7. Utilisation de la salle</h2>
+<p>7.1. Le Client respecte la capacité maximale de la salle et le <strong>règlement intérieur</strong> [À COMPLÉTER].</p>
+<p>7.2. Un retard ne prolonge pas la réservation ; tout dépassement d&#39;horaire peut être facturé [À COMPLÉTER].</p>
+<p>7.3. Un état des lieux est réalisé à l&#39;entrée et à la sortie [À COMPLÉTER].</p>
+<h2>8. Responsabilité et assurance</h2>
+<p>Le Client est responsable des dommages causés par lui-même, ses invités ou ses prestataires, et déclare être assuré en responsabilité civile. QUAI 19 n&#39;est pas responsable des vols ou pertes d&#39;objets.</p>
+<h2>9. Droit de rétractation</h2>
+<p>[⚠️ À VÉRIFIER avec votre juriste — professionnels : pas de droit de rétractation. Particuliers : la réservation d&#39;une salle à une date déterminée pour une activité de loisirs peut relever de l&#39;exception de l&#39;article L221-28, 12° du Code de la consommation ; à défaut, un délai de 14 jours s&#39;applique et doit être décrit ici.]</p>
+<h2>10. Données personnelles</h2>
+<p>Voir notre <a href="#confidentialite">politique de confidentialité</a>.</p>
+<h2>11. Médiation et litiges</h2>
+<p>11.1. En cas de difficulté, écrivez-nous à {{EMAIL_TEXTE}}.</p>
+<p>11.2. <strong>Clients particuliers</strong> : recours gratuit possible au médiateur de la consommation : [À COMPLÉTER — nom, adresse, site]. [⚠️ Adhésion obligatoire pour vendre à des particuliers.]</p>
+<p>11.3. Droit français applicable ; pour les professionnels, tribunaux de [À COMPLÉTER].</p>
+</article></section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div>
+      <p><strong>QUAI 19</strong> — 19 quai Saint-Antoine, 69002 Lyon</p>
+      <p data-si="email"><a href="{{EMAIL_HREF}}" class="selectable">{{EMAIL}}</a></p>
+      <p data-si="tel"><a href="{{TEL_HREF}}" class="selectable">{{TEL}}</a></p>
     </div>
-  </footer>
+    <nav aria-label="Informations légales">
+      <ul>
+        <li><a href="#mentions-legales">Mentions légales</a></li>
+        <li><a href="#confidentialite">Politique de confidentialité</a></li>
+        <li><a href="#conditions">Conditions de réservation</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer></template>
+<div id="q19-root"></div>
+<!-- ✏️ VOS COORDONNÉES : modifiez uniquement la ligne suivante (laissez "" pour masquer) -->
+<script type="application/json" id="q19-state">{"email":"","telephone":""}</script>
+<script id="q19-app">
+(function () {
+  "use strict";
+  document.documentElement.lang = "fr"; // langue de la page (lecteurs d'écran, traduction automatique)
+  var stateEl = document.getElementById("q19-state");
+  var state = { email: "", telephone: "" };
+  try { var parsed = JSON.parse(stateEl.textContent); state.email = String(parsed.email || ""); state.telephone = String(parsed.telephone || ""); } catch (e) {}
+  var tpl = document.getElementById("q19-site");
+  var root = document.getElementById("q19-root");
+  var VIEWS = ["accueil","salles","reserver","mentions-legales","confidentialite","conditions"];
+
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+  // Remplit le gabarit avec les coordonnées actuelles
+  function render() {
+    var email = state.email.trim(), tel = state.telephone.trim();
+    var emailTexte = email ? '<a href="mailto:' + esc(email) + '" class="selectable">' + esc(email) + "</a>" : "l'adresse e-mail indiquée en bas de page";
+    root.innerHTML = tpl.innerHTML
+      .split("{{EMAIL_TEXTE}}").join(emailTexte)
+      .split("{{EMAIL_HREF}}").join(esc("mailto:" + email))
+      .split("{{EMAIL}}").join(esc(email))
+      .split("{{TEL_HREF}}").join(esc("tel:" + tel.replace(/[^0-9+]/g, "")))
+      .split("{{TEL}}").join(esc(tel));
+    root.querySelectorAll('[data-si="email"]').forEach(function (el) { el.hidden = !email; });
+    root.querySelectorAll('[data-si="tel"]').forEach(function (el) { el.hidden = !tel; });
+    root.querySelectorAll('[data-si="contact"]').forEach(function (el) { el.hidden = !email && !tel; });
+    show(false);
+  }
+
+  // Affiche la rubrique correspondant à l'adresse (#salles, #reserver…)
+  function show(moveFocus) {
+    var name = location.hash.slice(1);
+    if (VIEWS.indexOf(name) === -1) name = "accueil";
+    root.querySelectorAll(".view").forEach(function (v) { v.hidden = v.getAttribute("data-view") !== name; });
+    root.querySelectorAll("[data-nav]").forEach(function (a) {
+      if (a.getAttribute("data-nav") === name) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    });
+    document.title = name === "accueil" ? "QUAI 19" : (root.querySelector('.view[data-view="' + name + '"]').getAttribute("aria-label") + " — QUAI 19");
+    if (moveFocus) {
+      window.scrollTo(0, 0);
+      var h1 = root.querySelector('.view[data-view="' + name + '"] h1');
+      if (h1) h1.focus({ preventScroll: true });
+    }
+  }
+  window.addEventListener("hashchange", function () { show(true); });
+  render();
+
+  // Recrée la page complète avec les nouvelles coordonnées (pour la republier)
+  function documentFor(next) {
+    var css = document.getElementById("q19-style").textContent;
+    var js = document.getElementById("q19-app").textContent;
+    var json = JSON.stringify({ email: next.email, telephone: next.telephone }).replace(/</g, "\\u003c");
+    var close = "</" + "script>";
+    return "<!doctype html><html><head><meta charset=utf8><meta name=viewport content=\"width=device-width,initial-scale=1,viewport-fit=cover\"><style>" +
+      ":root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}" +
+      "</style></head><body>" +
+      "<title>QUAI 19</title><meta name=\"claude:viewport-fit-sides\" content=\"cover\">" +
+      '<style id="q19-style">' + css + "</style>" +
+      '<template id="q19-site">' + tpl.innerHTML + "</" + "template>" +
+      '<div id="q19-root"></div>' +
+      '<script type="application/json" id="q19-state">' + json + close +
+      '<script id="q19-app">' + js + close +
+      "</body></html>";
+  }
+
+  // Espace propriétaire : modifier l'e-mail et le téléphone affichés sur le site
+  (async function () {
+    var use = window.claude && window.claude.use;
+    if (!use) return;
+    var user = await window.claude.use("user");
+    if (!user) return;
+    var allowed = false;
+    try { allowed = (await user.isOwner()) || (await user.canEdit()); } catch (e) { allowed = false; }
+    if (!allowed) return;
+
+    var toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "owner-toggle";
+    toggle.textContent = "Modifier mes coordonnées";
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-controls", "q19-owner");
+
+    var panel = document.createElement("form");
+    panel.id = "q19-owner";
+    panel.className = "owner-panel";
+    panel.hidden = true;
+    panel.noValidate = true;
+    panel.innerHTML =
+      "<h2>Mes coordonnées</h2>" +
+      '<p class="small muted">Visible uniquement par vous. Laissez un champ vide pour le masquer du site.</p>' +
+      '<label for="q19-email">Adresse e-mail</label><input id="q19-email" type="email" autocomplete="email" maxlength="120">' +
+      '<label for="q19-tel">Téléphone</label><input id="q19-tel" type="tel" autocomplete="tel" maxlength="30">' +
+      '<div class="row"><button type="submit" class="save">Enregistrer sur le site</button><button type="button" class="cancel">Fermer</button></div>' +
+      '<p class="owner-msg" role="status" aria-live="polite"></p>';
+    document.body.appendChild(panel);
+    document.body.appendChild(toggle);
+
+    var emailIn = panel.querySelector("#q19-email"), telIn = panel.querySelector("#q19-tel"), msg = panel.querySelector(".owner-msg"), save = panel.querySelector(".save");
+    function open(v) {
+      panel.hidden = !v; toggle.setAttribute("aria-expanded", String(v));
+      if (v) { emailIn.value = state.email; telIn.value = state.telephone; msg.textContent = ""; emailIn.focus(); }
+    }
+    toggle.addEventListener("click", function () { open(panel.hidden); });
+    panel.querySelector(".cancel").addEventListener("click", function () { open(false); toggle.focus(); });
+
+    panel.addEventListener("submit", async function (ev) {
+      ev.preventDefault();
+      var email = emailIn.value.trim(), tel = telIn.value.trim();
+      msg.className = "owner-msg error";
+      if (email && !/^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(email)) { msg.textContent = "Adresse e-mail invalide (exemple : contact@quai19.fr)."; emailIn.focus(); return; }
+      if (tel && !/^[+0-9 ().-]{6,30}$/.test(tel)) { msg.textContent = "Numéro invalide : chiffres, espaces et + uniquement (exemple : 04 78 00 00 00)."; telIn.focus(); return; }
+      if (email === state.email && tel === state.telephone) { msg.className = "owner-msg"; msg.textContent = "Aucun changement à enregistrer."; return; }
+      var artifact = await window.claude.use("artifact");
+      if (!artifact) { msg.textContent = "Modification impossible depuis cet affichage. Ouvrez le site depuis votre compte Claude."; return; }
+      save.disabled = true; msg.className = "owner-msg"; msg.textContent = "Enregistrement…";
+      try {
+        await artifact.publish(documentFor({ email: email, telephone: tel }));
+        msg.textContent = "Enregistré : le site se met à jour.";
+      } catch (e) {
+        msg.className = "owner-msg error";
+        var code = e && e.code;
+        msg.textContent = code === "conflict" ? "Une autre modification vient d'être enregistrée. Rechargez la page puis recommencez."
+          : (code === "not_writer" || code === "not_granted") ? "Votre compte n'a pas le droit de modifier ce site."
+          : "L'enregistrement a échoué. Réessayez dans un instant.";
+        save.disabled = false;
+      }
+    });
+  })();
+})();
+</script>
+
 </body>
 </html>
