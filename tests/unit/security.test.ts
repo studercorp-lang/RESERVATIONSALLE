@@ -15,7 +15,11 @@ describe("recherche chiffrée dans l'adresse", () => {
 
   it("un paramètre falsifié ou absent donne une recherche vide", () => {
     expect(openQuery("camille@example.com")).toBe("");
-    expect(openQuery(sealQuery("x").replace(/.$/, "A"))).toBe("");
+    // On altère le 1er caractère de l'étiquette d'authentification (« iv.étiquette.données ») :
+    // tous ses bits sont significatifs, contrairement au dernier caractère d'un bloc base64.
+    const [iv, tag, data] = sealQuery("x").split(".");
+    const tampered = [iv, (tag[0] === "A" ? "B" : "A") + tag.slice(1), data].join(".");
+    expect(openQuery(tampered)).toBe("");
     expect(openQuery(undefined)).toBe("");
   });
 });

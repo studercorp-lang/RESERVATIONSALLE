@@ -15,6 +15,10 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false, // ne pas annoncer la technologie utilisée
+  // La vérification du style du code se fait avec « npm run lint », pas pendant la mise en ligne
+  eslint: { ignoreDuringBuilds: true },
+  // Vérification des types à la compilation, sans les fichiers de test (outils absents en production)
+  typescript: { tsconfigPath: "tsconfig.build.json" },
   // Les modules natifs (hachage des mots de passe) restent côté serveur
   serverExternalPackages: ["@node-rs/argon2"],
   experimental: {

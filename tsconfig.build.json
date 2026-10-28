@@ -1,0 +1,5 @@
+{
+  "//": "Configuration utilisée pour la compilation de mise en ligne : sans les tests ni leurs outils.",
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", "tests", "vitest.config.ts", "playwright.config.ts"]
+}
