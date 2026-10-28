@@ -7,6 +7,7 @@
  */
 import { PrismaClient, PriceUnit, BookingStatus } from "@prisma/client";
 import { addDays } from "date-fns";
+import { estimatePriceCents } from "../src/lib/availability/pricing";
 import { parisToUtc, utcToParis } from "../src/lib/time";
 
 const prisma = new PrismaClient();
@@ -76,10 +77,11 @@ async function main() {
       data: {
         ...data,
         sortOrder: i,
-        // Horaires QUAI 19 : ouvert 7j/7 de 15h00 à 03h00 le lendemain,
-        // début de réservation au plus tard à 22h00.
+        // Horaires QUAI 19 : ouvert du mardi au dimanche de 15h00 à 03h00 le lendemain,
+        // début de réservation au plus tard à 22h00. Fermé le lundi.
+        // (Modifiables ensuite dans le back-office.)
         openingHours: {
-          create: [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({
+          create: [2, 3, 4, 5, 6, 7].map((weekday) => ({
             weekday,
             openMin: 15 * 60,
             closeMin: 24 * 60 + 3 * 60, // 03h00 le lendemain
@@ -104,7 +106,11 @@ async function main() {
 
   // Quelques réservations dans les prochains jours, à heures « rondes » de Paris
   const today = utcToParis(new Date()).isoDate;
-  const day = (offset: number) => utcToParis(addDays(parisToUtc(today, 12 * 60), offset)).isoDate;
+  // Date dans `offset` jours, décalée au mardi si elle tombe un lundi (jour de fermeture)
+  const day = (offset: number) => {
+    const d = utcToParis(addDays(parisToUtc(today, 12 * 60), offset));
+    return d.weekday === 1 ? utcToParis(addDays(parisToUtc(d.isoDate, 12 * 60), 1)).isoDate : d.isoDate;
+  };
   // Horaires en minutes depuis minuit du jour de début ; au-delà de 1440 = lendemain (02h00 = 1560)
   const demo = [
     { room: 0, customer: 0, date: day(3), start: 18 * 60, end: 26 * 60, attendees: 60, status: BookingStatus.CONFIRMED },
@@ -113,7 +119,7 @@ async function main() {
     { room: 0, customer: 2, date: day(10), start: 20 * 60, end: 27 * 60, attendees: 75, status: BookingStatus.PENDING },
   ];
   for (const [i, b] of demo.entries()) {
-    const room = rooms[b.room];
+    const room = await prisma.room.findUniqueOrThrow({ where: { id: rooms[b.room].id }, include: { priceRules: true } });
     const startsAt = parisToUtc(b.date, b.start);
     const endsAt = parisToUtc(b.date, b.end);
     await prisma.booking.create({
@@ -126,6 +132,7 @@ async function main() {
         blockedUntil: new Date(endsAt.getTime() + room.bufferMin * 60_000),
         attendees: b.attendees,
         status: b.status,
+        estimatedCents: estimatePriceCents(room.priceRules, startsAt, endsAt),
         pendingExpiresAt: b.status === BookingStatus.PENDING ? addDays(new Date(), 7) : null,
         decidedAt: b.status === BookingStatus.CONFIRMED ? new Date() : null,
       },

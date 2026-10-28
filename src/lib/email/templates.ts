@@ -137,7 +137,7 @@ export function customerModified(d: BookingMailData) {
   const rows = recapRows(d);
   const html = layout(subject, `<p>Bonjour ${esc(d.firstName)},</p><p>Votre demande a bien été modifiée. Voici le nouveau récapitulatif :</p>${table(rows)}
 ${d.manageUrl ? button(d.manageUrl, "Gérer ma réservation") : ""}<p>L'équipe ${esc(SITE.name)}</p>`);
-  return { subject, html, text: `Bonjour ${d.firstName},\n\nVotre demande a bien été modifiée :\n\n${text(rows)}\n\nL'équipe ${SITE.name}` };
+  return { subject, html, text: `Bonjour ${d.firstName},\n\nVotre demande a bien été modifiée :\n\n${text(rows)}\n\n${manageText(d)}L'équipe ${SITE.name}` };
 }
 
 /** Notification à l'équipe d'un changement fait par le client via son lien. */
@@ -147,4 +147,49 @@ export function teamClientChange(d: BookingMailData, what: string) {
   const adminUrl = appUrl("/admin/reservations");
   const html = layout(subject, `<p>${esc(what)} par le client via son lien de gestion.</p>${table(rows)}${button(adminUrl, "Ouvrir le back-office")}`);
   return { subject, html, text: `${what} par le client.\n\n${text(rows)}\n\nBack-office : ${adminUrl}` };
+}
+
+/** Lien de gestion en texte brut (remplace les liens envoyés précédemment). */
+const manageText = (d: BookingMailData) =>
+  d.manageUrl ? `Gérer ma réservation (lien personnel, il remplace les liens reçus précédemment) : ${d.manageUrl}\n\n` : "";
+
+/** Message libre de l'équipe, inséré dans l'e-mail (échappé, retours à la ligne conservés). */
+const teamMessage = (m?: string | null) => (m ? `<p style="border-left:3px solid #ccc;padding-left:12px;white-space:pre-line">${esc(m)}</p>` : "");
+
+/** Réservation confirmée par l'équipe. */
+export function customerConfirmed(d: BookingMailData, message?: string | null) {
+  const subject = `Votre réservation ${d.reference} est confirmée — ${SITE.name}`;
+  const rows = recapRows(d);
+  const html = layout(subject, `<p>Bonjour ${esc(d.firstName)},</p><p>Bonne nouvelle : votre réservation est confirmée.</p>${teamMessage(message)}${table(rows)}
+<p><strong>Adresse :</strong> ${esc(SITE.address)}</p>${d.manageUrl ? button(d.manageUrl, "Gérer ma réservation") : ""}
+<p style="font-size:14px;color:#555">En cas d'annulation, des frais peuvent s'appliquer selon nos <a href="${appUrl("/conditions-reservation")}">conditions de réservation</a>. La caution est gérée directement avec notre équipe.</p>
+<p>À bientôt,<br>L'équipe ${esc(SITE.name)}</p>`);
+  return { subject, html, text: `Bonjour ${d.firstName},\n\nVotre réservation est confirmée.\n\n${message ? `${message}\n\n` : ""}${text(rows)}\nAdresse : ${SITE.address}\n\n${manageText(d)}L'équipe ${SITE.name}` };
+}
+
+/** Demande non retenue. */
+export function customerRefused(d: BookingMailData, message?: string | null) {
+  const subject = `Votre demande ${d.reference} — ${SITE.name}`;
+  const rows = recapRows(d).filter(([k]) => !k.startsWith("Estimation"));
+  const html = layout(subject, `<p>Bonjour ${esc(d.firstName)},</p><p>Nous sommes désolés : nous ne pouvons pas donner suite à votre demande de réservation.</p>${teamMessage(message)}${table(rows)}
+<p>N'hésitez pas à nous proposer une autre date ou à nous contacter à ${esc(SITE.contactEmail)}.</p><p>L'équipe ${esc(SITE.name)}</p>`);
+  return { subject, html, text: `Bonjour ${d.firstName},\n\nNous ne pouvons pas donner suite à votre demande.\n\n${message ? `${message}\n\n` : ""}${text(rows)}\n\nL'équipe ${SITE.name}` };
+}
+
+/** Annulation décidée par l'équipe. */
+export function customerCancelledByTeam(d: BookingMailData, message?: string | null) {
+  const subject = `Annulation de votre réservation ${d.reference} — ${SITE.name}`;
+  const rows = recapRows(d).filter(([k]) => !k.startsWith("Estimation"));
+  const html = layout(subject, `<p>Bonjour ${esc(d.firstName)},</p><p>Votre réservation a été annulée par notre équipe.</p>${teamMessage(message)}${table(rows)}
+<p>Pour toute question : ${esc(SITE.contactEmail)}.</p><p>L'équipe ${esc(SITE.name)}</p>`);
+  return { subject, html, text: `Bonjour ${d.firstName},\n\nVotre réservation a été annulée par notre équipe.\n\n${message ? `${message}\n\n` : ""}${text(rows)}\n\nL'équipe ${SITE.name}` };
+}
+
+/** Créneau modifié par l'équipe. */
+export function customerRescheduledByTeam(d: BookingMailData, message?: string | null) {
+  const subject = `Modification de votre réservation ${d.reference} — ${SITE.name}`;
+  const rows = recapRows(d);
+  const html = layout(subject, `<p>Bonjour ${esc(d.firstName)},</p><p>Votre réservation a été modifiée par notre équipe. Voici le nouveau récapitulatif :</p>${teamMessage(message)}${table(rows)}
+${d.manageUrl ? button(d.manageUrl, "Gérer ma réservation") : ""}<p>L'équipe ${esc(SITE.name)}</p>`);
+  return { subject, html, text: `Bonjour ${d.firstName},\n\nVotre réservation a été modifiée :\n\n${message ? `${message}\n\n` : ""}${text(rows)}\n\n${manageText(d)}L'équipe ${SITE.name}` };
 }

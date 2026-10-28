@@ -45,12 +45,16 @@ model Room {
   @@map("rooms")
 }
 
+/// Photo d'une salle, stockée directement en base (sauvegardée avec elle,
+/// aucun service de stockage supplémentaire). Servie par /photos/[id].
 model RoomPhoto {
-  id        String @id @default(cuid())
+  id        String   @id @default(cuid())
   roomId    String
-  url       String // chemin local (/uploads/...) ou stockage objet hébergé en UE
+  data      Bytes // image (JPEG, PNG ou WebP, 3 Mo maximum)
+  mimeType  String
   alt       String // texte alternatif obligatoire (accessibilité)
-  sortOrder Int    @default(0)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
 
   room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
@@ -118,17 +122,17 @@ model PriceRule {
 /// Un contact client, identifié par son adresse e-mail.
 /// Pas de compte ni de mot de passe : le client gère sa demande via un lien sécurisé.
 model Customer {
-  id                 String    @id @default(cuid())
-  email              String    @unique // toujours enregistré en minuscules
-  firstName          String
-  lastName           String
-  phone              String // format international E.164, ex. +33612345678
-  company            String? // facultatif
-  marketingOptIn     Boolean   @default(false) // état actuel du consentement à la prospection
-  lastContactAt      DateTime  @default(now()) @db.Timestamptz(3) // point de départ de la durée de conservation « prospection »
-  anonymizedAt       DateTime? @db.Timestamptz(3) // rempli quand les données ont été effacées/anonymisées
-  createdAt          DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt          DateTime  @updatedAt @db.Timestamptz(3)
+  id             String    @id @default(cuid())
+  email          String    @unique // toujours enregistré en minuscules
+  firstName      String
+  lastName       String
+  phone          String // format international E.164, ex. +33612345678
+  company        String? // facultatif
+  marketingOptIn Boolean   @default(false) // état actuel du consentement à la prospection
+  lastContactAt  DateTime  @default(now()) @db.Timestamptz(3) // point de départ de la durée de conservation « prospection »
+  anonymizedAt   DateTime? @db.Timestamptz(3) // rempli quand les données ont été effacées/anonymisées
+  createdAt      DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(3)
 
   bookings Booking[]
   consents Consent[]
@@ -223,23 +227,42 @@ enum AdminRole {
 }
 
 model AdminUser {
-  id             String    @id @default(cuid())
-  email          String    @unique
-  name           String
-  passwordHash   String // haché avec argon2id, jamais le mot de passe en clair
-  role           AdminRole @default(MANAGER)
-  totpSecret     String? // secret de double authentification, chiffré (AES-256-GCM)
-  totpEnabled    Boolean   @default(false)
-  failedLogins   Int       @default(0)
-  lockedUntil    DateTime? @db.Timestamptz(3)
-  lastLoginAt    DateTime? @db.Timestamptz(3)
-  active         Boolean   @default(true)
-  createdAt      DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime  @updatedAt @db.Timestamptz(3)
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  name               String
+  passwordHash       String // haché avec argon2id, jamais le mot de passe en clair
+  role               AdminRole @default(MANAGER)
+  totpSecret         String? // secret de double authentification, chiffré (AES-256-GCM)
+  totpEnabled        Boolean   @default(false)
+  failedLogins       Int       @default(0)
+  lockedUntil        DateTime? @db.Timestamptz(3)
+  lastLoginAt        DateTime? @db.Timestamptz(3)
+  active             Boolean   @default(true)
+  mustChangePassword Boolean   @default(false) // mot de passe provisoire à changer à la 1re connexion
+  createdAt          DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime  @updatedAt @db.Timestamptz(3)
 
   auditLogs AuditLog[]
+  sessions  AdminSession[]
 
   @@map("admin_users")
+}
+
+/// Session de connexion d'un membre de l'équipe (cookie sécurisé).
+/// Seule l'empreinte du jeton est stockée ; la session peut être révoquée à tout moment.
+model AdminSession {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  userId     String
+  totpPassed Boolean  @default(false) // double authentification validée pour cette session
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  lastSeenAt DateTime @default(now()) @db.Timestamptz(3)
+  expiresAt  DateTime @db.Timestamptz(3)
+
+  user AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("admin_sessions")
 }
 
 /// Journal d'audit : qui a consulté, modifié, exporté ou supprimé quoi, et quand.

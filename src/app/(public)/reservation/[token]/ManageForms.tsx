@@ -1,7 +1,8 @@
 "use client";
 
 /** Formulaires du lien de gestion (annuler, modifier, corriger, se désinscrire). */
-import { useActionState, useState } from "react";
+import { useState } from "react";
+import { useFormAction } from "@/components/useFormAction";
 import { SlotFields, type SearchDefaults } from "@/components/SearchForm";
 import type { TimeOptions } from "@/lib/availability/time-options";
 import { Alert, Button, inputClass } from "@/components/ui";
@@ -17,7 +18,7 @@ const base = "inline-flex items-center justify-center rounded-md border bg-white
 const secondary = `${base} border-line text-ink`;
 
 export function CancelForm({ token, feePercent }: { token: string; feePercent: number }) {
-  const [state, action, pending] = useActionState(cancelAction.bind(null, token), null);
+  const { state, formAction: action, onSubmit, pending } = useFormAction(cancelAction.bind(null, token), null as ManageState);
   const [open, setOpen] = useState(false);
   if (!open) {
     return (
@@ -27,7 +28,7 @@ export function CancelForm({ token, feePercent }: { token: string; feePercent: n
     );
   }
   return (
-    <form action={action} className="space-y-4 rounded-md border border-danger p-4">
+    <form action={action} onSubmit={onSubmit} className="space-y-4 rounded-md border border-danger p-4">
       <p className="font-semibold">Confirmez-vous l&apos;annulation ?</p>
       <p>
         {feePercent > 0 ? (
@@ -66,9 +67,9 @@ export function ModifyForm({
   maxDate: string;
   times: TimeOptions;
 }) {
-  const [state, action, pending] = useActionState(modifyAction.bind(null, token), null);
+  const { state, formAction: action, onSubmit, pending } = useFormAction(modifyAction.bind(null, token), null as ManageState);
   return (
-    <form action={action} className="space-y-4">
+    <form action={action} onSubmit={onSubmit} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <SlotFields idPrefix="mod-" defaults={defaults} minDate={minDate} maxDate={maxDate} times={times} />
       </div>
@@ -79,7 +80,7 @@ export function ModifyForm({
 }
 
 export function ContactForm({ token, defaults }: { token: string; defaults: { lastName: string; firstName: string; phone: string; company: string } }) {
-  const [state, action, pending] = useActionState(contactAction.bind(null, token), null);
+  const { state, formAction: action, onSubmit, pending } = useFormAction(contactAction.bind(null, token), null as ManageState);
   const field = (name: keyof typeof defaults, label: string, autoComplete: string, optional = false) => (
     <div>
       <label htmlFor={`c-${name}`} className="mb-1 block font-medium">
@@ -90,7 +91,7 @@ export function ContactForm({ token, defaults }: { token: string; defaults: { la
     </div>
   );
   return (
-    <form action={action} className="space-y-4">
+    <form action={action} onSubmit={onSubmit} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         {field("lastName", "Nom", "family-name")}
         {field("firstName", "Prénom", "given-name")}
@@ -104,9 +105,9 @@ export function ContactForm({ token, defaults }: { token: string; defaults: { la
 }
 
 export function MarketingForm({ token }: { token: string }) {
-  const [state, action, pending] = useActionState(marketingAction.bind(null, token), null);
+  const { state, formAction: action, onSubmit, pending } = useFormAction(marketingAction.bind(null, token), null as ManageState);
   return (
-    <form action={action} className="space-y-3">
+    <form action={action} onSubmit={onSubmit} className="space-y-3">
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={secondary}>Ne plus recevoir d&apos;informations commerciales</button>
     </form>

@@ -13,7 +13,7 @@ export default async function HomePage() {
   const [settings, times, rooms] = await Promise.all([
     getSettings(),
     getTimeOptions(),
-    prisma.room.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" }, include: { photos: { orderBy: { sortOrder: "asc" }, take: 1 } } }),
+    prisma.room.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" }, include: { photos: { orderBy: { sortOrder: "asc" }, take: 1, select: { id: true, alt: true } } } }),
   ]);
   const bounds = dateBounds(settings);
 
@@ -41,7 +41,7 @@ export default async function HomePage() {
               <Card className="flex h-full flex-col">
                 {room.photos[0] ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={room.photos[0].url} alt={room.photos[0].alt} className="aspect-[16/9] w-full rounded-md object-cover" loading="lazy" />
+                  <img src={`/photos/${room.photos[0].id}`} alt={room.photos[0].alt} className="aspect-[16/9] w-full rounded-md object-cover" loading="lazy" />
                 ) : (
                   <PhotoPlaceholder name={room.name} />
                 )}

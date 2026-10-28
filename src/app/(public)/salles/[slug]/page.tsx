@@ -24,7 +24,7 @@ const WEEKDAYS = ["", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi
 const getRoom = (slug: string) =>
   prisma.room.findFirst({
     where: { slug, active: true },
-    include: { photos: { orderBy: { sortOrder: "asc" } }, priceRules: true, openingHours: { orderBy: [{ weekday: "asc" }, { openMin: "asc" }] } },
+    include: { photos: { orderBy: { sortOrder: "asc" }, select: { id: true, alt: true } }, priceRules: true, openingHours: { orderBy: [{ weekday: "asc" }, { openMin: "asc" }] } },
   });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -89,7 +89,7 @@ export default async function RoomPage({ params, searchParams }: Props) {
           ) : (
             room.photos.map((p, i) => (
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={p.id} src={p.url} alt={p.alt} loading={i === 0 ? "eager" : "lazy"} className="aspect-[16/9] w-full rounded-md object-cover" />
+              <img key={p.id} src={`/photos/${p.id}`} alt={p.alt} loading={i === 0 ? "eager" : "lazy"} className="aspect-[16/9] w-full rounded-md object-cover" />
             ))
           )}
         </div>
