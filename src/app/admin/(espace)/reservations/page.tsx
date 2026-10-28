@@ -2,6 +2,8 @@ import Link from "next/link";
 import { BookingStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { bookingWhere } from "@/lib/admin/bookings";
+import { openQuery } from "@/lib/security/sealed-query";
+import { searchAction } from "../search-action";
 import { formatEuros } from "@/lib/availability/pricing";
 import { formatShortDate, formatTime } from "@/lib/format";
 import { PageTitle, STATUS_ADMIN, StatusBadge, primarySmall, smallButton } from "@/components/admin";
@@ -10,12 +12,13 @@ import { inputClass } from "@/components/ui";
 export const metadata = { title: "Réservations" };
 const PAGE_SIZE = 50;
 
-type SP = { statut?: string; salle?: string; du?: string; au?: string; q?: string; page?: string };
+type SP = { statut?: string; salle?: string; du?: string; au?: string; q?: string; client?: string; page?: string };
 
 export default async function BookingsPage({ searchParams }: { searchParams: Promise<SP> }) {
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
-  const where = bookingWhere({ status: sp.statut, roomId: sp.salle, from: sp.du, to: sp.au, q: sp.q });
+  const q = openQuery(sp.q);
+  const where = bookingWhere({ status: sp.statut, roomId: sp.salle, from: sp.du, to: sp.au, q, customerId: sp.client });
   const [rooms, total, bookings] = await Promise.all([
     prisma.room.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }),
     prisma.booking.count({ where }),
@@ -45,10 +48,10 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
         Réservations
       </PageTitle>
 
-      <form method="get" className="mb-6 grid gap-3 rounded-lg border border-line bg-white p-4 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
+      <form action={searchAction.bind(null, "/admin/reservations")} className="mb-6 grid gap-3 rounded-lg border border-line bg-white p-4 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
         <div className="lg:col-span-2">
           <label htmlFor="q" className="mb-1 block text-sm font-medium">Recherche</label>
-          <input id="q" name="q" defaultValue={sp.q} placeholder="Référence, nom, e-mail, société" className={inputClass} />
+          <input id="q" name="q" defaultValue={q} placeholder="Référence, nom, e-mail, société" className={inputClass} />
         </div>
         <div>
           <label htmlFor="statut" className="mb-1 block text-sm font-medium">Statut</label>

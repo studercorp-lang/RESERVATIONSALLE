@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { audit } from "@/lib/audit/log";
 import { contactWhere } from "@/lib/admin/contacts";
 import { toCsv } from "@/lib/admin/csv";
+import { openQuery } from "@/lib/security/sealed-query";
 import { actorLabel, currentSession } from "@/lib/auth/session";
 import { formatDate, formatPhone } from "@/lib/format";
 
@@ -13,7 +14,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL("/admin/connexion", req.url));
   }
   const p = new URL(req.url).searchParams;
-  const filters = { q: p.get("q") ?? undefined, prospection: p.get("prospection") === "1" };
+  const filters = { q: openQuery(p.get("q")), prospection: p.get("prospection") === "1" };
   const contacts = await prisma.customer.findMany({
     where: contactWhere(filters),
     orderBy: { lastName: "asc" },

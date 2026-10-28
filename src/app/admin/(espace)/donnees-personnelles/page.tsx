@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { requireStaff } from "@/lib/auth/session";
 import { searchPeople } from "@/lib/gdpr/person";
+import { openQuery } from "@/lib/security/sealed-query";
+import { searchAction } from "../search-action";
 import { PageTitle, primarySmall } from "@/components/admin";
 import { Card, inputClass } from "@/components/ui";
 
@@ -8,7 +10,7 @@ export const metadata = { title: "Données personnelles" };
 
 export default async function GdprSearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   await requireStaff("ADMIN");
-  const { q = "" } = await searchParams;
+  const q = openQuery((await searchParams).q);
   const results = q ? await searchPeople(q) : [];
   return (
     <div className="space-y-6">
@@ -18,7 +20,7 @@ export default async function GdprSearchPage({ searchParams }: { searchParams: P
           Une personne vous demande l&apos;accès à ses données, leur correction ou leur effacement ? Retrouvez-la ici. Vous devez répondre <strong>sous un mois</strong> (procédure : <code>docs/rgpd/</code>).
           Vérifiez son identité : la demande doit venir de l&apos;adresse e-mail enregistrée.
         </p>
-        <form method="get" className="flex flex-wrap items-end gap-3">
+        <form action={searchAction.bind(null, "/admin/donnees-personnelles")} className="flex flex-wrap items-end gap-3">
           <div className="min-w-64 flex-1">
             <label htmlFor="q" className="mb-1 block text-sm font-medium">E-mail, nom ou téléphone</label>
             <input id="q" name="q" defaultValue={q} minLength={3} required className={inputClass} />

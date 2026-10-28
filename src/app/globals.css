@@ -39,3 +39,17 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+
+/* Mise en forme des textes légaux (Markdown) */
+.legal h1 { font-size: 1.875rem; font-weight: 700; margin-bottom: 1rem; }
+.legal h2 { font-size: 1.25rem; font-weight: 600; margin: 1.75rem 0 0.5rem; }
+.legal h3 { font-weight: 600; margin: 1.25rem 0 0.5rem; }
+.legal p, .legal ul, .legal ol, .legal table { margin: 0.75rem 0; line-height: 1.65; }
+.legal ul { list-style: disc; padding-left: 1.5rem; }
+.legal ol { list-style: decimal; padding-left: 1.5rem; }
+.legal li { margin: 0.25rem 0; }
+.legal a { color: var(--color-brand); text-decoration: underline; }
+.legal table { width: 100%; border-collapse: collapse; font-size: 0.95rem; display: block; overflow-x: auto; }
+.legal th, .legal td { border: 1px solid var(--color-line); padding: 0.5rem; text-align: left; vertical-align: top; }
+.legal th { background: var(--color-surface); }
+.legal em { color: var(--color-muted); }

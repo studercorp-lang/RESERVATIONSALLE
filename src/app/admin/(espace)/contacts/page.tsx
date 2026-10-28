@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { contactWhere } from "@/lib/admin/contacts";
+import { openQuery } from "@/lib/security/sealed-query";
+import { searchAction } from "../search-action";
 import { requireStaff } from "@/lib/auth/session";
 import { formatPhone, formatShortDate } from "@/lib/format";
 import { PageTitle, primarySmall, smallButton } from "@/components/admin";
@@ -12,7 +14,8 @@ const PAGE_SIZE = 50;
 export default async function ContactsPage({ searchParams }: { searchParams: Promise<{ q?: string; prospection?: string; page?: string }> }) {
   const [sp, session] = await Promise.all([searchParams, requireStaff()]);
   const page = Math.max(1, Number(sp.page) || 1);
-  const filters = { q: sp.q, prospection: sp.prospection === "1" };
+  const q = openQuery(sp.q);
+  const filters = { q, prospection: sp.prospection === "1" };
   const where = contactWhere(filters);
   const [total, contacts] = await Promise.all([
     prisma.customer.count({ where }),
@@ -35,10 +38,10 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
       <p className="mb-4 text-sm text-muted">
         Les personnes ayant fait une demande de réservation. Pour une campagne commerciale, utilisez uniquement le filtre « Accord pour la prospection » : contacter les autres n&apos;est pas autorisé.
       </p>
-      <form method="get" className="mb-6 flex flex-wrap items-end gap-3 rounded-lg border border-line bg-white p-4">
+      <form action={searchAction.bind(null, "/admin/contacts")} className="mb-6 flex flex-wrap items-end gap-3 rounded-lg border border-line bg-white p-4">
         <div className="min-w-60 flex-1">
           <label htmlFor="q" className="mb-1 block text-sm font-medium">Recherche</label>
-          <input id="q" name="q" defaultValue={sp.q} placeholder="Nom, e-mail, société" className={inputClass} />
+          <input id="q" name="q" defaultValue={q} placeholder="Nom, e-mail, société" className={inputClass} />
         </div>
         <label className="flex items-center gap-2 pb-2.5 text-sm">
           <input type="checkbox" name="prospection" value="1" defaultChecked={filters.prospection} className="h-4 w-4 accent-brand" /> Accord pour la prospection uniquement
@@ -69,7 +72,7 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
                 <td className="p-3"><a href={`mailto:${c.email}`} className="text-brand underline">{c.email}</a></td>
                 <td className="p-3 whitespace-nowrap"><a href={`tel:${c.phone}`}>{formatPhone(c.phone)}</a></td>
                 <td className="p-3">
-                  <Link href={`/admin/reservations?q=${encodeURIComponent(c.email)}`} className="text-brand underline">{c._count.bookings}</Link>
+                  <Link href={`/admin/reservations?client=${c.id}`} className="text-brand underline">{c._count.bookings}</Link>
                   {c.bookings[0] && <span className="text-muted"> · dernière {formatShortDate(c.bookings[0].startsAt)}</span>}
                 </td>
                 <td className="p-3">{c.marketingOptIn ? "Oui" : "Non"}</td>

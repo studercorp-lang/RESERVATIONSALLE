@@ -225,12 +225,13 @@ export async function createBookingByTeam(
 // Liste, filtres, export
 // ---------------------------------------------------------------------------
 
-export type BookingFilters = { status?: string; roomId?: string; from?: string; to?: string; q?: string };
+export type BookingFilters = { status?: string; roomId?: string; from?: string; to?: string; q?: string; customerId?: string };
 
 export function bookingWhere(f: BookingFilters): Prisma.BookingWhereInput {
   const where: Prisma.BookingWhereInput = {};
   if (f.status && f.status in BookingStatus) where.status = f.status as BookingStatus;
   if (f.roomId) where.roomId = f.roomId;
+  if (f.customerId) where.customerId = f.customerId;
   const range: Prisma.DateTimeFilter = {};
   if (f.from && /^\d{4}-\d{2}-\d{2}$/.test(f.from)) range.gte = parisToUtc(f.from, 0);
   if (f.to && /^\d{4}-\d{2}-\d{2}$/.test(f.to)) range.lt = parisToUtc(f.to, 1440);
