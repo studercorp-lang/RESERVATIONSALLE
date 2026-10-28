@@ -20,6 +20,8 @@ Application web qui permet à vos clients de **demander la réservation d'une sa
 10. [Sauvegardes, mises à jour et dépannage](#10-sauvegardes-mises-à-jour-et-dépannage)
 11. [Organisation du code (pour un·e développeur·se)](#11-organisation-du-code-pour-une-développeurse)
 
+> 💡 **Version sans frais d'hébergement** : le dossier [`vitrine/`](vitrine/README-VITRINE.md) contient un site vitrine en HTML pur (salles, tarifs, pages légales, formulaire de demande via Tally), hébergeable gratuitement. Il ne comprend ni calendrier, ni back-office, ni outils RGPD automatiques : les demandes arrivent par e-mail et se traitent à la main.
+
 Documents associés :
 
 - 📋 [Checklist avant la mise en ligne](docs/CHECKLIST-MISE-EN-LIGNE.md) — **à lire en premier**

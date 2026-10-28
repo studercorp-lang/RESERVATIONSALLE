@@ -1,0 +1,7 @@
+Déposez ici les photos des salles (format JPEG ou WebP, largeur conseillée 1600 px, poids < 400 Ko).
+Noms conseillés : la-verriere.jpg, le-salon-saone.jpg, l-atelier.jpg
+Puis, dans index.html et salles.html, remplacez chaque bloc
+  <div class="photo-placeholder" aria-hidden="true">…</div>
+par
+  <img class="photo" src="photos/la-verriere.jpg" alt="Description de la photo">
+(un commentaire 📷 indique l'endroit exact). La description (alt) est lue par les personnes malvoyantes.
